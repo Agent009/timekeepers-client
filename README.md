@@ -1,4 +1,7 @@
-# Zora Demo
+# Timekeepers Demo
+
+A basic generative AI application demonstrating the potential of time-bound NFTs.
+
 ## Setup
 
 Copy `.env` and create your `.env.local` file, replacing placeholder values with actual values.
