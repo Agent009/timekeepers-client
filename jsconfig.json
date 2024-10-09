@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "@*": ["./src/*"],
+      "@public/*": ["./../public/*"],
+      "@images/*": ["./../public/images/*"],
+      "@app/*": ["./src/app/*"],
+      "@components/*": ["./src/components/*"],
+      "@customTypes/*": ["./src/types/*"],
+      "@lib/*": ["./src/lib/*"],
+      "@styles/*": ["./src/styles/*"],
+      "@ui/*": [".src/components/ui/*"]
+    }
+  }
+}

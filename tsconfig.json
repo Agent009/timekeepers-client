@@ -1,0 +1,57 @@
+{
+  "compilerOptions": {
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "alwaysStrict": true,
+    "module": "esnext",
+    "esModuleInterop": true,
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "noUnusedLocals": true,
+    "allowImportingTsExtensions": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitAny": false, // ideally: true, but currently causes issues due to low quality code
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUnusedParameters": false, // ideally: true, but currently causes issues due to low quality code
+    "allowUnreachableCode": false,
+    "noFallthroughCasesInSwitch": true,
+    "target": "es2017",
+    "outDir": "out",
+    "sourceMap": true,
+    "allowSyntheticDefaultImports": true,
+    "checkJs": true,
+    "forceConsistentCasingInFileNames": true,
+    "jsx": "preserve",
+    "noEmit": true,
+    "isolatedModules": true,
+    "incremental": true,
+    // Load types
+    "types": ["vitest/globals"],
+    // Path aliases
+    "baseUrl": "src/",
+    "paths": {
+      "@*": ["./src/*"],
+      "@public/*": ["./../public/*"],
+      "@images/*": ["./../public/images/*"],
+      "@app/*": ["app/*"],
+      "@components/*": ["components/*"],
+      "@customTypes/*": ["types/*"],
+      "@lib/*": ["lib/*"],
+      "@styles/*": ["styles/*"],
+      "@ui/*": ["components/ui/*"]
+    },
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "strictNullChecks": true
+  },
+  "include": ["**/*.d.ts", ".next/types/**/*.ts", "**/*.ts", "**/*.tsx"],
+  "exclude": ["./out/**/*", "./node_modules/**/*"]
+}
