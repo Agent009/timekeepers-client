@@ -34,6 +34,10 @@ export interface TimeCard {
   topText?: string;
   bottomText?: string;
   date: Date;
+  minted?: boolean;
+  rarity?: EpochRarity;
+  status?: EpochStatus;
+  nft?: string;
   content?: () => React.ReactNode;
 }
 
@@ -45,6 +49,12 @@ export interface EpochData {
   ymdhmDate: string; // string in YYYY-MM-DD HH:mm format
   state: EpochState;
   status: EpochStatus;
-  nft?: string;
+  nft?: string | null;
   rarity?: EpochRarity;
+}
+
+export interface WriteDataResponse {
+  success: boolean;
+  updated?: boolean;
+  message: string;
 }

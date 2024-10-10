@@ -12,32 +12,32 @@
   {
     "type": "hour",
     "value": 0,
-    "isoDate": "2024-10-09T23:39:58.117Z",
+    "isoDate": "2024-10-09T23:48:53.547Z",
     "ymdDate": "2024-10-10",
-    "ymdhmDate": "2024-10-10 00:39",
+    "ymdhmDate": "2024-10-10 00:48",
+    "state": "past",
+    "status": "queued",
+    "rarity": "legendary"
+  },
+  {
+    "type": "year",
+    "value": 2024,
+    "isoDate": "2024-10-10T12:48:02.180Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 13:48",
     "state": "past",
     "status": "queued",
     "rarity": "common"
   },
   {
-    "type": "year",
-    "value": 2024,
-    "isoDate": "2024-10-09T23:39:58.117Z",
-    "ymdDate": "2024-10-10",
-    "ymdhmDate": "2024-10-10 00:39",
-    "state": "past",
-    "status": "queued",
-    "rarity": "rare"
-  },
-  {
     "type": "day",
     "value": 10,
-    "isoDate": "2024-10-09T23:39:58.117Z",
+    "isoDate": "2024-10-10T12:48:02.180Z",
     "ymdDate": "2024-10-10",
-    "ymdhmDate": "2024-10-10 00:39",
+    "ymdhmDate": "2024-10-10 13:48",
     "state": "past",
     "status": "queued",
-    "rarity": "rare"
+    "rarity": "legendary"
   },
   {
     "type": "minute",
@@ -78,5 +78,465 @@
     "state": "past",
     "status": "queued",
     "rarity": "epic"
+  },
+  {
+    "type": "minute",
+    "value": 47,
+    "isoDate": "2024-10-09T23:47:06.509Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 00:47",
+    "state": "past",
+    "status": "queued",
+    "rarity": "common"
+  },
+  {
+    "type": "minute",
+    "value": 48,
+    "isoDate": "2024-10-09T23:48:53.547Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 00:48",
+    "state": "past",
+    "status": "queued",
+    "rarity": "rare"
+  },
+  {
+    "type": "minute",
+    "value": 49,
+    "isoDate": "2024-10-09T23:49:00.647Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 00:49",
+    "state": "past",
+    "status": "queued",
+    "rarity": "epic"
+  },
+  {
+    "type": "hour",
+    "value": 11,
+    "isoDate": "2024-10-10T10:35:25.638Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 11:35",
+    "state": "past",
+    "status": "queued",
+    "rarity": "epic"
+  },
+  {
+    "type": "minute",
+    "value": 5,
+    "isoDate": "2024-10-10T10:05:07.438Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 11:05",
+    "state": "past",
+    "status": "queued",
+    "rarity": "legendary"
+  },
+  {
+    "type": "minute",
+    "value": 6,
+    "isoDate": "2024-10-10T10:06:00.858Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 11:06",
+    "state": "past",
+    "status": "queued",
+    "rarity": "common"
+  },
+  {
+    "type": "minute",
+    "value": 7,
+    "isoDate": "2024-10-10T10:07:03.567Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 11:07",
+    "state": "past",
+    "status": "queued",
+    "rarity": "rare"
+  },
+  {
+    "type": "minute",
+    "value": 8,
+    "isoDate": "2024-10-10T10:08:34.292Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 11:08",
+    "state": "past",
+    "status": "queued",
+    "rarity": "epic"
+  },
+  {
+    "type": "minute",
+    "value": 9,
+    "isoDate": "2024-10-10T10:09:00.379Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 11:09",
+    "state": "past",
+    "status": "queued",
+    "rarity": "rare"
+  },
+  {
+    "type": "minute",
+    "value": 10,
+    "isoDate": "2024-10-10T10:10:00.381Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 11:10",
+    "state": "past",
+    "status": "queued",
+    "rarity": "epic"
+  },
+  {
+    "type": "minute",
+    "value": 11,
+    "isoDate": "2024-10-10T10:11:00.380Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 11:11",
+    "state": "past",
+    "status": "queued",
+    "rarity": "common"
+  },
+  {
+    "type": "minute",
+    "value": 12,
+    "isoDate": "2024-10-10T10:12:40.807Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 11:12",
+    "state": "past",
+    "status": "queued",
+    "rarity": "common"
+  },
+  {
+    "type": "minute",
+    "value": 13,
+    "isoDate": "2024-10-10T10:13:32.523Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 11:13",
+    "state": "past",
+    "status": "queued",
+    "rarity": "common"
+  },
+  {
+    "type": "minute",
+    "value": 14,
+    "isoDate": "2024-10-10T10:14:42.389Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 11:14",
+    "state": "past",
+    "status": "queued",
+    "rarity": "common"
+  },
+  {
+    "type": "minute",
+    "value": 15,
+    "isoDate": "2024-10-10T10:15:00.489Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 11:15",
+    "state": "past",
+    "status": "queued",
+    "rarity": "epic"
+  },
+  {
+    "type": "minute",
+    "value": 16,
+    "isoDate": "2024-10-10T10:16:23.853Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 11:16",
+    "state": "past",
+    "status": "queued",
+    "rarity": "common"
+  },
+  {
+    "type": "minute",
+    "value": 17,
+    "isoDate": "2024-10-10T10:17:23.850Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 11:17",
+    "state": "past",
+    "status": "queued",
+    "rarity": "epic"
+  },
+  {
+    "type": "minute",
+    "value": 18,
+    "isoDate": "2024-10-10T10:18:10.857Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 11:18",
+    "state": "past",
+    "status": "queued",
+    "rarity": "rare"
+  },
+  {
+    "type": "minute",
+    "value": 19,
+    "isoDate": "2024-10-10T10:19:24.741Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 11:19",
+    "state": "past",
+    "status": "queued",
+    "rarity": "common"
+  },
+  {
+    "type": "minute",
+    "value": 20,
+    "isoDate": "2024-10-10T10:20:00.847Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 11:20",
+    "state": "past",
+    "status": "queued",
+    "rarity": "common"
+  },
+  {
+    "type": "minute",
+    "value": 21,
+    "isoDate": "2024-10-10T10:21:13.612Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 11:21",
+    "state": "past",
+    "status": "queued",
+    "rarity": "common"
+  },
+  {
+    "type": "minute",
+    "value": 22,
+    "isoDate": "2024-10-10T10:22:00.712Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 11:22",
+    "state": "past",
+    "status": "queued",
+    "rarity": "epic"
+  },
+  {
+    "type": "minute",
+    "value": 23,
+    "isoDate": "2024-10-10T10:23:00.853Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 11:23",
+    "state": "past",
+    "status": "queued",
+    "rarity": "legendary"
+  },
+  {
+    "type": "minute",
+    "value": 24,
+    "isoDate": "2024-10-10T10:24:00.699Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 11:24",
+    "state": "past",
+    "status": "queued",
+    "rarity": "common"
+  },
+  {
+    "type": "minute",
+    "value": 25,
+    "isoDate": "2024-10-10T10:25:00.853Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 11:25",
+    "state": "past",
+    "status": "queued",
+    "rarity": "common"
+  },
+  {
+    "type": "minute",
+    "value": 26,
+    "isoDate": "2024-10-10T10:26:42.138Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 11:26",
+    "state": "past",
+    "status": "queued",
+    "rarity": "common"
+  },
+  {
+    "type": "minute",
+    "value": 27,
+    "isoDate": "2024-10-10T10:27:58.886Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 11:27",
+    "state": "past",
+    "status": "queued",
+    "rarity": "legendary"
+  },
+  {
+    "type": "minute",
+    "value": 28,
+    "isoDate": "2024-10-10T10:28:43.437Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 11:28",
+    "state": "past",
+    "status": "queued",
+    "rarity": "legendary"
+  },
+  {
+    "type": "minute",
+    "value": 29,
+    "isoDate": "2024-10-10T10:29:00.858Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 11:29",
+    "state": "past",
+    "status": "queued",
+    "rarity": "legendary"
+  },
+  {
+    "type": "minute",
+    "value": 30,
+    "isoDate": "2024-10-10T10:30:23.844Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 11:30",
+    "state": "past",
+    "status": "queued",
+    "rarity": "rare"
+  },
+  {
+    "type": "minute",
+    "value": 31,
+    "isoDate": "2024-10-10T10:31:44.051Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 11:31",
+    "state": "past",
+    "status": "queued",
+    "rarity": "common"
+  },
+  {
+    "type": "minute",
+    "value": 32,
+    "isoDate": "2024-10-10T10:32:00.131Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 11:32",
+    "state": "past",
+    "status": "queued",
+    "rarity": "common"
+  },
+  {
+    "type": "minute",
+    "value": 33,
+    "isoDate": "2024-10-10T10:33:00.853Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 11:33",
+    "state": "past",
+    "status": "queued",
+    "rarity": "epic"
+  },
+  {
+    "type": "minute",
+    "value": 34,
+    "isoDate": "2024-10-10T10:34:23.853Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 11:34",
+    "state": "past",
+    "status": "queued",
+    "rarity": "common"
+  },
+  {
+    "type": "minute",
+    "value": 35,
+    "isoDate": "2024-10-10T10:35:25.638Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 11:35",
+    "state": "past",
+    "status": "queued",
+    "rarity": "rare"
+  },
+  {
+    "type": "minute",
+    "value": 36,
+    "isoDate": "2024-10-10T10:36:00.709Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 11:36",
+    "state": "past",
+    "status": "queued",
+    "rarity": "legendary"
+  },
+  {
+    "type": "minute",
+    "value": 37,
+    "isoDate": "2024-10-10T10:37:00.707Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 11:37",
+    "state": "past",
+    "status": "queued",
+    "rarity": "legendary"
+  },
+  {
+    "type": "minute",
+    "value": 2,
+    "isoDate": "2024-10-10T11:02:24.882Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 12:02",
+    "state": "past",
+    "status": "queued",
+    "rarity": "rare"
+  },
+  {
+    "type": "hour",
+    "value": 12,
+    "isoDate": "2024-10-10T11:06:49.508Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 12:06",
+    "state": "past",
+    "status": "queued",
+    "rarity": "rare"
+  },
+  {
+    "type": "minute",
+    "value": 3,
+    "isoDate": "2024-10-10T11:03:00.821Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 12:03",
+    "state": "past",
+    "status": "queued",
+    "rarity": "common"
+  },
+  {
+    "type": "minute",
+    "value": 6,
+    "isoDate": "2024-10-10T11:06:49.508Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 12:06",
+    "state": "past",
+    "status": "queued",
+    "rarity": "legendary"
+  },
+  {
+    "type": "minute",
+    "value": 7,
+    "isoDate": "2024-10-10T11:07:00.856Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 12:07",
+    "state": "past",
+    "status": "queued",
+    "rarity": "epic"
+  },
+  {
+    "type": "minute",
+    "value": 17,
+    "isoDate": "2024-10-10T11:17:02.652Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 12:17",
+    "state": "past",
+    "status": "queued",
+    "rarity": "rare"
+  },
+  {
+    "type": "minute",
+    "value": 48,
+    "isoDate": "2024-10-10T12:48:02.180Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 13:48",
+    "state": "past",
+    "status": "queued",
+    "rarity": "common"
+  },
+  {
+    "type": "hour",
+    "value": 13,
+    "isoDate": "2024-10-10T12:48:02.180Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 13:48",
+    "state": "past",
+    "status": "queued",
+    "rarity": "legendary"
+  },
+  {
+    "type": "minute",
+    "value": 49,
+    "isoDate": "2024-10-10T12:49:00.255Z",
+    "ymdDate": "2024-10-10",
+    "ymdhmDate": "2024-10-10 13:49",
+    "state": "past",
+    "status": "queued",
+    "rarity": "legendary"
   }
 ]

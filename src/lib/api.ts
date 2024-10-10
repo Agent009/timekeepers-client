@@ -23,7 +23,7 @@ export const formatUrl = (
   // Remove forward slash from the base URL if it's already provided in the endpoint.
   apiUrl = endpoint?.charAt(0) === "/" ? apiUrl.slice(0, apiUrl?.length - 1) : apiUrl;
   apiUrl += endpoint;
-  console.log("getApiUrl -> apiUrl", apiUrl);
+  // console.log("getApiUrl -> apiUrl", apiUrl);
 
   const placeholderIdToken = "/:";
   const urlPlaceholders: string[] = apiUrl.split(placeholderIdToken);

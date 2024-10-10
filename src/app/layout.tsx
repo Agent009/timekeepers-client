@@ -2,7 +2,6 @@ import React from "react";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "@styles/globals.css";
-import { Header, Footer } from "@components/index";
 import { constants } from "@lib/constants";
 import FavIcon from "@app/favicon.ico";
 
@@ -25,7 +24,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <div className="flex flex-col min-h-screen ">
-          <Header />
+          {/*<Header />*/}
           <main>{children}</main>
           {/* <Footer /> */}
         </div>

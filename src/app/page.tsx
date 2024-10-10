@@ -1,42 +1,52 @@
 "use client";
-import React, { useEffect, useState, useTransition } from "react";
-import { Timeline } from "@ui/timeline";
-import { CountdownTimer } from "@ui/timer";
-import { getEpochSnapshot, randomRarity } from "@lib/utils";
-import ExpandableCard from "@components/blocks/expandableCardGrid";
-import { cards as minuteCards } from "@lib/timeCards";
-import { constants } from "@lib/constants";
-import { getApiUrl } from "@lib/api";
-import { EpochData, EpochState, EpochStatus, EpochType } from "@customTypes/index.ts";
-import { textToImage } from "@lib/server/livepeer";
+import React, { useCallback, useEffect, useState, useTransition } from "react";
 import CircularProgress, { circularProgressClasses } from "@mui/material/CircularProgress";
+import { EpochData, EpochState, EpochStatus, EpochType } from "@customTypes/index";
+import ExpandableCard from "@components/blocks/expandableCardGrid";
+import { getApiUrl } from "@lib/api";
+import { constants } from "@lib/constants";
+import { textToImage } from "@lib/server/livepeer";
+import { getEpochSnapshot, randomRarity } from "@lib/utils";
+import { Timeline } from "@ui/timeline";
+import { getTimeCards } from "@lib/timeCards";
+import { CountdownTimer } from "@ui/timer";
 
 export default function Home() {
   const [data, setData] = useState<EpochData[]>([]);
-  const [epoches, setEpoches] = useState(getEpochSnapshot()); // Initialize state for epoches
+  const [epoches, setEpoches] = useState(getEpochSnapshot());
   const [isPending, startTransition] = useTransition();
   const [images, setImages] = useState<string[]>([]);
-  console.log("page -> data", data);
+  const [isMounted, setIsMounted] = useState(false);
+  // console.log("page -> isMounted", isMounted, "isPending", isPending);
+  // console.log("page -> data", data);
 
-  const addData = async (newEntry: EpochData) => {
-    await fetch(getApiUrl(constants.routes.api.data), {
+  const addData = useCallback(async (newEntry: EpochData) => {
+    const response = await fetch(getApiUrl(constants.routes.api.data), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(newEntry),
     });
-  };
+
+    if (!response.ok) {
+      const errorData = await response.json(); // Parse the error response
+      throw new Error(errorData.message || "Error saving data"); // Throw an error with the message
+    }
+
+    return await response.json(); // Return the parsed JSON response
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
       // "/api/?startDate=2023-10-01&endDate=2023-10-02"
+      console.log("page -> useEffect -> fetchData");
       const response = await fetch(getApiUrl(constants.routes.api.data));
       const result = await response.json();
       setData(result);
     };
 
-    fetchData();
+    fetchData().then(() => setIsMounted(true));
 
     const intervalId = setInterval(() => {
       setEpoches(getEpochSnapshot()); // Re-fetch the epoch snapshot every second
@@ -46,6 +56,11 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    if (!isMounted) {
+      return;
+    }
+
+    console.log("page -> useEffect -> addData -> minute epoch");
     addData({
       type: EpochType.Minute,
       value: epoches.minute,
@@ -55,33 +70,40 @@ export default function Home() {
       state: EpochState.Past,
       status: EpochStatus.Queued,
       rarity: randomRarity(),
-    }).then((r) => {
-      console.log("Added minute epoch data", r);
-      startTransition(async () => {
-        const result = await textToImage({
-          modelId: "SG161222/RealVisXL_V4.0_Lightning",
-          prompt:
-            "A beautiful sunset on a beach. In the bottom right of the picture, print the following timestamp: " +
-            epoches.fullDateTime,
-          width: 512,
-          height: 512,
-          guidanceScale: 7.5,
-          negativePrompt: "ugly, deformed, gross, unnatural, unrealistic, poor quality, low res",
-          safetyCheck: false,
-          seed: epoches.minute,
-          numInferenceSteps: 50,
-          numImagesPerPrompt: 1,
-        });
-        if (result.success) {
-          setImages((prevImages) => [...result.images, ...prevImages]);
-        } else {
-          console.error("Failed to generate minute epoch image", result);
+    })
+      .then((r) => {
+        console.log("Added minute epoch data", r);
+
+        // Only generate an image if the epoch data was stored for the first time.
+        if (r.success && !r.updated) {
+          startTransition(async () => {
+            const result = await textToImage({
+              prompt:
+                "A beautiful sunset on a beach with the following text in the bottom right: " + epoches.fullDateTime,
+              seed: epoches.minute,
+              epochType: EpochType.Minute,
+              ymdhmDate: epoches.fullDateTime,
+            });
+
+            if (result.success) {
+              setImages((prevImages) => [...result.images, ...prevImages]);
+            } else {
+              console.error("Failed to generate minute epoch image", result);
+            }
+          });
         }
+      })
+      .catch((error) => {
+        console.error("Error adding minute epoch data:", error.message);
       });
-    });
-  }, [epoches.minute]);
+  }, [isMounted, epoches.minute]);
 
   useEffect(() => {
+    if (!isMounted) {
+      return;
+    }
+
+    console.log("page -> useEffect -> addData -> hour epoch");
     addData({
       type: EpochType.Hour,
       value: epoches.hour,
@@ -91,10 +113,21 @@ export default function Home() {
       state: EpochState.Past,
       status: EpochStatus.Queued,
       rarity: randomRarity(),
-    });
-  }, [epoches.hour]);
+    })
+      .then((r) => {
+        console.log("Added hour epoch data", r);
+      })
+      .catch((error) => {
+        console.error("Error adding hour epoch data:", error.message);
+      });
+  }, [isMounted, epoches.hour]);
 
   useEffect(() => {
+    if (!isMounted) {
+      return;
+    }
+
+    console.log("page -> useEffect -> addData -> day epoch");
     addData({
       type: EpochType.Day,
       value: epoches.dayOfMonth,
@@ -104,10 +137,21 @@ export default function Home() {
       state: EpochState.Past,
       status: EpochStatus.Queued,
       rarity: randomRarity(),
-    });
-  }, [epoches.dayOfMonth]);
+    })
+      .then((r) => {
+        console.log("Added day epoch data", r);
+      })
+      .catch((error) => {
+        console.error("Error adding day epoch data:", error.message);
+      });
+  }, [isMounted, epoches.dayOfMonth]);
 
   useEffect(() => {
+    if (!isMounted) {
+      return;
+    }
+
+    console.log("page -> useEffect -> addData -> year epoch");
     addData({
       type: EpochType.Year,
       value: epoches.year,
@@ -117,9 +161,16 @@ export default function Home() {
       state: EpochState.Past,
       status: EpochStatus.Queued,
       rarity: randomRarity(),
-    });
-  }, [epoches.year]);
+    })
+      .then((r) => {
+        console.log("Added year epoch data", r);
+      })
+      .catch((error) => {
+        console.error("Error adding year epoch data:", error.message);
+      });
+  }, [isMounted, epoches.year]);
 
+  const minuteCards = getTimeCards(EpochType.Minute, epoches.minute, epoches.fullDateTime, data);
   const timelineData = [
     {
       title: "Minute " + epoches.minute,
@@ -127,6 +178,13 @@ export default function Home() {
         <div>
           <div className="grid grid-cols-2 gap-4">
             <CountdownTimer key={epoches.minute} duration={60} initialRemainingTime={60 - epoches.second} />
+          </div>
+          <div className="flex flex-col items-center justify-center gap-2 my-3">
+            <h2 className="mb-4 text-xl font-semibold">Minted & Upcoming Epochs</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <ExpandableCard cards={minuteCards?.pastCards} />
+              <ExpandableCard cards={minuteCards?.futureCards} />
+            </div>
           </div>
           <div className="flex items-center justify-center gap-2 my-3">
             {isPending && (
@@ -165,7 +223,6 @@ export default function Home() {
               </div>
             )}
           </div>
-          <ExpandableCard cards={minuteCards} />
         </div>
       ),
     },
@@ -202,7 +259,7 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <h1 className="text-4xl font-bold">Timekeepers Demo</h1>
-      <p>{epoches.isoDateTime}</p>
+      <p>{isMounted ? epoches.isoDateTime : "Loading..."}</p> {/* Render only after mount */}
       <div className="w-full">
         <div className="flex overflow-x-auto">
           <div className="min-w-[200px] p-4">

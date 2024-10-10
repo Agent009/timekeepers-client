@@ -1,10 +1,10 @@
 "use server";
 import path from "node:path";
-import { openAsBlob } from "node:fs";
-import { writeFileSync } from "node:fs";
+import { openAsBlob, writeFileSync } from "node:fs";
 import { revalidatePath } from "next/cache";
 import { Livepeer } from "@livepeer/ai";
 import dayjs from "dayjs";
+import { EpochType } from "@customTypes/index.ts";
 
 // const modelIds = [
 //   "ByteDance/SDXL-Lightning",
@@ -20,15 +20,17 @@ import dayjs from "dayjs";
 
 type TextToImageRequest = {
   prompt: string;
-  modelId: string;
-  width: number;
-  height: number;
-  guidanceScale: number;
-  negativePrompt: string;
-  safetyCheck: boolean;
-  seed: number;
-  numInferenceSteps: number;
-  numImagesPerPrompt: number;
+  modelId?: string;
+  width?: number;
+  height?: number;
+  guidanceScale?: number;
+  negativePrompt?: string;
+  safetyCheck?: boolean;
+  seed?: number;
+  numInferenceSteps?: number;
+  numImagesPerPrompt?: number;
+  epochType?: EpochType;
+  ymdhmDate?: string;
 };
 
 const livepeerAI = new Livepeer({
@@ -37,15 +39,19 @@ const livepeerAI = new Livepeer({
 
 export async function textToImage(params: TextToImageRequest) {
   const prompt = params.prompt;
-  const modelId = params.modelId;
-  const width = params.width;
-  const height = params.height;
-  const guidanceScale = params.guidanceScale;
-  const negativePrompt = params.negativePrompt;
-  const safetyCheck = params.safetyCheck;
-  const seed = params.seed;
-  const numInferenceSteps = params.numInferenceSteps;
-  const numImagesPerPrompt = params.numImagesPerPrompt;
+  const modelId = params.modelId || "SG161222/RealVisXL_V4.0_Lightning";
+  const width = params.width || 512;
+  const height = params.height || 512;
+  const guidanceScale = params.guidanceScale || 7.5;
+  const negativePrompt =
+    params.negativePrompt ||
+    "(octane render, render, drawing, anime, bad photo, bad photography:1.3), (worst quality, low quality, blurry:1.2), (bad teeth, deformed teeth, deformed lips), (bad anatomy, bad proportions:1.1), (deformed iris, deformed pupils), (deformed eyes, bad eyes), (deformed face, ugly face, bad face), (deformed hands, bad hands, fused fingers), morbid, mutilated, mutation, disfigured";
+  const safetyCheck = params.safetyCheck || false;
+  const seed = params.seed || 0;
+  const numInferenceSteps = params.numInferenceSteps || 50;
+  const numImagesPerPrompt = params.numImagesPerPrompt || 1;
+  const epochType = params.epochType || EpochType.Minute;
+  const ymdhmDate = params.ymdhmDate || dayjs().format("YYYY-MM-DD_HHmm");
   console.log("livepeer -> textToImage -> prompt", prompt);
   const result = await livepeerAI.generate.textToImage({
     modelId,
@@ -71,9 +77,10 @@ export async function textToImage(params: TextToImageRequest) {
       images.map(async (imageUrl, index) => {
         // Extract the image name from the URL by getting the last part of the URL.
         // Example URL: https://obj-store.livepeer.cloud/livepeer-cloud-ai-images/cff21c04/1c9b4a4d.png
-        const imageName = imageUrl.split("/").pop();
-        const timestamp = dayjs().format("YYYY-MM-DD_HHmm");
-        const imagePath = path.join(publicDir, imageName || `${timestamp}_${index}.png`);
+        // const imageName = imageUrl.split("/").pop();
+        // const imagePath = path.join(publicDir, imageName || `${ymdhmDate}_${index}.png`);
+        // const imageName = imageUrl.split("/").pop();
+        const imagePath = path.join(publicDir, `${epochType}_${ymdhmDate.replace(/[ :]/g, "_")}_${index}.png`);
         const response = await fetch(imageUrl);
         const arrayBuffer = await response.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);

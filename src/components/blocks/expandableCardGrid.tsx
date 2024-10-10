@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useId, useRef, useState } from "react";
+import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { useOutsideClick } from "@lib/hooks/use-outside-click";
 import { NumberCircle } from "@components/icons/numberCircle";
@@ -75,14 +76,16 @@ export default function ExpandableCard({ cards }: Props) {
                   <NumberCircle title={active.title} topText={"minute"} bottomText={"11:48"} width={200} height={200} />
                 </div>
 
-                {/* <Image
-                  priority
-                  width={200}
-                  height={200}
-                  src={}
-                  alt={active.title}
-                  className="w-full h-80 lg:h-80 sm:rounded-tr-lg sm:rounded-tl-lg object-cover object-top"
-                /> */}
+                {active.nft && (
+                  <Image
+                    priority
+                    width={200}
+                    height={200}
+                    src={active.nft}
+                    alt={active.title}
+                    className="w-full h-80 lg:h-80 sm:rounded-tr-lg sm:rounded-tl-lg object-cover object-top"
+                  />
+                )}
               </motion.div>
 
               <div>
@@ -130,7 +133,7 @@ export default function ExpandableCard({ cards }: Props) {
           </div>
         ) : null}
       </AnimatePresence>
-      <ul className="max-w-2xl mx-auto w-full grid grid-cols-1 md:grid-cols-5 items-start gap-4">
+      <ul className="max-w-2xl mx-auto w-full flex flex-row justify-center gap-4">
         {cards.map((card, index) => (
           <motion.div
             layoutId={`card-${card.title}-${id}`}
@@ -141,7 +144,13 @@ export default function ExpandableCard({ cards }: Props) {
             <div className="flex gap-4 flex-col w-full">
               <motion.div layoutId={`image-${card.title}-${id}`}>
                 <div className="h-50 w-full flex items-center justify-center">
-                  <NumberCircle title={card.title} topText={"minute"} bottomText={"11:48"} width={200} height={200} />
+                  <NumberCircle
+                    title={card.title}
+                    topText={card.topText}
+                    bottomText={card.bottomText}
+                    width={200}
+                    height={200}
+                  />
                 </div>
                 {/*<Image*/}
                 {/*  width={100}*/}

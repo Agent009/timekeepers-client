@@ -28,8 +28,8 @@ export async function POST(request) {
   try {
     const newEntry: EpochData = await request.json();
     console.log("api -> POST data -> newEntry", newEntry);
-    writeData(newEntry);
-    return NextResponse.json({ message: "Data saved successfully." }, { status: 200 });
+    const writeDataResponse = writeData(newEntry);
+    return NextResponse.json(writeDataResponse, { status: 200 });
   } catch (error) {
     console.error("api -> POST data -> error", error);
 
