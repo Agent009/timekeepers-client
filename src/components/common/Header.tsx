@@ -1,12 +1,46 @@
 "use client";
 import React from "react";
+import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import "@styles/globals.css";
-import CX_Logo_Light from "@images/logos/cx-logo-light.svg";
 import Linkedin_Icon from "@components/icons/Linkedin_Icon";
+import { constants, getUrl } from "@lib/index";
+import CX_Logo_Light from "@images/logos/cx-logo-light.svg";
 
 export function Header() {
+  const { status } = useSession();
+  const router = useRouter();
+
+  const showSession = () => {
+    if (status === "authenticated") {
+      return (
+        <button
+          className="rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+          onClick={() => {
+            signOut({ redirect: false }).then(() => {
+              router.push("/");
+            });
+          }}
+        >
+          Sign Out
+        </button>
+      );
+    } else if (status === "loading") {
+      return <span className="text-[#888] text-sm mt-7">Loading...</span>;
+    } else {
+      return (
+        <Link
+          href={getUrl(constants.routes.login)}
+          className="rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+        >
+          Sign In
+        </Link>
+      );
+    }
+  };
+
   return (
     <>
       <header className="px-60">
@@ -30,11 +64,7 @@ export function Header() {
                   <p className="text-black/80">Stable Diffusion</p>
                 </Link>
               </li>
-              <li>
-                <Link href="#">
-                  <p className="text-black/80">Text Generation</p>
-                </Link>
-              </li>
+              <li>{showSession()}</li>
             </ul>
           </nav>
 

@@ -42,6 +42,7 @@
       "@components/*": ["components/*"],
       "@customTypes/*": ["types/*"],
       "@lib/*": ["lib/*"],
+      "@models/*": ["models/*"],
       "@styles/*": ["styles/*"],
       "@ui/*": ["components/ui/*"]
     },

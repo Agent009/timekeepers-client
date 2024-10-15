@@ -58,3 +58,9 @@ export interface WriteDataResponse {
   updated?: boolean;
   message: string;
 }
+
+export type RegisterPayload = {
+  email: FormDataEntryValue;
+  password: FormDataEntryValue;
+  name?: FormDataEntryValue | null;
+};

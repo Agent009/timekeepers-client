@@ -10,6 +10,12 @@ const devOrLocalEnv = devEnv || localEnv;
 const cwaServerHost = process.env.CWA_SERVER_HOST || "http://localhost";
 const cwaServerPort = process.env.CWA_SERVER_PORT || 3000;
 const cwaServerUrl = process.env.NEXT_PUBLIC_CWA_SERVER_URL || `${cwaServerHost}:${cwaServerPort}`;
+// DB
+const mongodbHost = process.env.MONGODB_HOST;
+const mongodbPort = parseInt(process.env.MONGODB_PORT || "27017");
+const mongodbDb = process.env.MONGODB_DB;
+const mongodbUsername = process.env.MONGODB_USERNAME;
+const mongodbPassword = process.env.MONGODB_PASSWORD;
 
 export const constants = Object.freeze({
   // Environment
@@ -32,10 +38,26 @@ export const constants = Object.freeze({
     productionUrl: "https://connextar.com",
     repoUrl: "https://github.com/Connextar/cx-website",
   },
+  db: {
+    // MongoDB
+    mongodbHost: mongodbHost,
+    mongodbPort: mongodbPort,
+    mongodbDb: mongodbDb,
+    mongodbUsername: mongodbUsername,
+    mongodbPassword: mongodbPassword,
+    mongodbUri:
+      process.env.MONGODB_URI ||
+      `mongodb://${mongodbUsername}:${mongodbPassword}@${mongodbHost}:${mongodbPort}/${mongodbDb}`,
+    models: {
+      USER: "User",
+    },
+  },
   // Routes
   routes: {
     anchor: "#",
     home: "/",
+    login: "login",
+    register: "register",
     sitemap: "/sitemap.xml",
     api: {
       base: cwaServerUrl + (cwaServerUrl?.charAt(cwaServerUrl?.length - 1) !== "/" ? "/" : "") + "api/",

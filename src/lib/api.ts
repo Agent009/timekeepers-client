@@ -1,6 +1,16 @@
 import { constants } from "@lib/index";
 
 /**
+ * Get the formatted app URL for the given endpoint, replacing any placeholders with the respective parameters.
+ * @param {string} endpoint
+ * @param {null|undefined|{[]}} params
+ * @returns {string}
+ */
+export const getUrl = (endpoint: string, params?: { [key: string]: never }): string => {
+  return formatUrl(constants.cwa.url, endpoint, params);
+};
+
+/**
  * Get the formatted API URL for the given endpoint, replacing any placeholders with the respective parameters.
  * @param {string} endpoint
  * @param {null|undefined|{[]}} params

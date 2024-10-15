@@ -8,6 +8,7 @@
       "@components/*": ["./src/components/*"],
       "@customTypes/*": ["./src/types/*"],
       "@lib/*": ["./src/lib/*"],
+      "@models/*": ["./src/models/*"],
       "@styles/*": ["./src/styles/*"],
       "@ui/*": [".src/components/ui/*"]
     }

@@ -209,7 +209,7 @@ export default function Home() {
             )}
             {images.length > 0 && (
               <div className="mt-8">
-                <h2 className="mb-4 text-xl font-semibold">Generated Images</h2>
+                <h2 className="mb-4 text-xl font-semibold">Minted NFTs</h2>
                 <div className="grid grid-cols-2 gap-4">
                   {images.map((src, index) => (
                     <img
