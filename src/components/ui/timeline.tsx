@@ -1,18 +1,17 @@
 "use client";
 import { useScroll, useTransform, motion } from "framer-motion";
 import React, { useEffect, useRef, useState } from "react";
-
-interface TimelineEntry {
-  title: string;
-  content: React.ReactNode;
-}
+import { TimelineEntry } from "@customTypes/index.ts";
 
 export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
   const ref = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState(0);
+  console.log("Timeline -> init -> height", height);
 
   useEffect(() => {
+    console.log("Timeline -> useEffect -> init");
+
     if (ref.current) {
       const rect = ref.current.getBoundingClientRect();
       setHeight(rect.height);

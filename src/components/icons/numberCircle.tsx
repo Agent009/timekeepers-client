@@ -1,3 +1,5 @@
+import { EpochRarity, rarityGradientColors } from "@customTypes/index";
+
 type Props = {
   title?: string;
   topText?: string;
@@ -22,13 +24,24 @@ export const NumberCircle = ({
   textColor = "black",
   topText = "",
   bottomText = "",
-  startColor = "#9a2104",
-  endColor = "#feb47b",
+  startColor = rarityGradientColors[EpochRarity.Common].start,
+  endColor = rarityGradientColors[EpochRarity.Common].end,
   backgroundImage,
   backgroundImageOpacity = 1, // Default opacity set to 1 (fully opaque)
 }: Props) => {
   // Adjust radius based on width and height
   const radius = Math.min(width, height) / 2 - strokeWidth;
+  const gradientId = `gradient-${startColor.replace("#", "")}-${endColor.replace("#", "")}`;
+  // console.log(
+  //   "NumberCircle -> render -> text",
+  //   topText,
+  //   title,
+  //   bottomText,
+  //   "gradient",
+  //   gradientId,
+  //   startColor,
+  //   endColor,
+  // );
 
   return (
     <svg width={width} height={height} className={className}>
@@ -36,7 +49,7 @@ export const NumberCircle = ({
         <clipPath id="circleClip">
           <circle cx={width / 2} cy={height / 2} r={radius} />
         </clipPath>
-        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" style={{ stopColor: startColor, stopOpacity: 1 }} />
           <stop offset="100%" style={{ stopColor: endColor, stopOpacity: 1 }} />
         </linearGradient>
@@ -51,7 +64,14 @@ export const NumberCircle = ({
           opacity={backgroundImageOpacity} // Set the opacity of the image
         />
       )}
-      <circle cx={width / 2} cy={height / 2} r={radius} stroke="url(#gradient)" strokeWidth={strokeWidth} fill="none" />
+      <circle
+        cx={width / 2}
+        cy={height / 2}
+        r={radius}
+        stroke={`url(#${gradientId})`}
+        strokeWidth={strokeWidth}
+        fill="none"
+      />
       <text x="50%" y="20%" textAnchor="middle" dominantBaseline="middle" fontSize={radius * 0.2} fill={textColor}>
         {topText}
       </text>

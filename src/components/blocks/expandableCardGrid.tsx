@@ -12,6 +12,16 @@ export default function ExpandableCard({ cards }: Props) {
   const [active, setActive] = useState<TimeCard | boolean | null>(null);
   const id = useId();
   const ref = useRef<HTMLDivElement>(null);
+  console.log(
+    "ExpandableCard -> init -> cards",
+    cards?.[0]?.value,
+    cards?.[0]?.rarity,
+    cards?.[1]?.value,
+    cards?.[1]?.rarity,
+    cards,
+    "active",
+    active,
+  );
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -163,53 +173,59 @@ export default function ExpandableCard({ cards }: Props) {
         ) : null}
       </AnimatePresence>
       <ul className="max-w-2xl mx-auto w-full flex flex-row justify-center">
-        {cards.map((card, index) => (
-          <motion.div
-            layoutId={`card-${card.value}-${id}`}
-            key={`${card.value}-${card.date}-${index}`}
-            onClick={() => setActive(card)}
-            className="p-2 flex flex-col hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-xl cursor-pointer"
-          >
-            <div className="flex flex-col w-full">
-              <motion.div layoutId={`image-${card.value}-${id}`}>
-                <div className="h-50 w-full flex items-center justify-center">
-                  <NumberCircle
-                    title={card.value}
-                    topText={card.topText}
-                    bottomText={card.bottomText}
-                    width={200}
-                    height={200}
-                    startColor={card.rarity ? rarityGradientColors[card.rarity].start : undefined}
-                    endColor={card.rarity ? rarityGradientColors[card.rarity].end : undefined}
-                    backgroundImage={"images/nfts/minute_2024-10-10_12_06_0.png"}
-                    backgroundImageOpacity={0.3}
-                  />
-                </div>
-                {/*<Image*/}
-                {/*  width={100}*/}
-                {/*  height={100}*/}
-                {/*  src={card.src}*/}
-                {/*  alt={card.title}*/}
-                {/*  className="h-60 w-full  rounded-lg object-cover object-top"*/}
-                {/*/>*/}
-              </motion.div>
-              {/*<div className="flex justify-center items-center flex-col">*/}
-              {/*  <motion.h3*/}
-              {/*    layoutId={`title-${card.title}-${id}`}*/}
-              {/*    className="font-medium text-neutral-800 dark:text-neutral-200 text-center md:text-left text-base"*/}
-              {/*  >*/}
-              {/*    {card.title}*/}
-              {/*  </motion.h3>*/}
-              {/*  <motion.p*/}
-              {/*    layoutId={`description-${card.description}-${id}`}*/}
-              {/*    className="text-neutral-600 dark:text-neutral-400 text-center md:text-left text-base"*/}
-              {/*  >*/}
-              {/*    {card.description}*/}
-              {/*  </motion.p>*/}
-              {/*</div>*/}
-            </div>
-          </motion.div>
-        ))}
+        {cards.map((card, index) => {
+          const startColor = card.rarity ? rarityGradientColors[card.rarity].start : undefined;
+          const endColor = card.rarity ? rarityGradientColors[card.rarity].end : undefined;
+          console.log("ExpandableCard -> cards.map -> data", card.type, card.value, card.rarity, startColor, endColor);
+          return (
+            <motion.div
+              layoutId={`card-${card.value}-${id}`}
+              key={`${card.value}-${card.date}-${index}`}
+              onClick={() => setActive(card)}
+              className="p-2 flex flex-col hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-xl cursor-pointer"
+            >
+              <div className="flex flex-col w-full">
+                <motion.div layoutId={`image-${card.value}-${id}`}>
+                  <div className="h-50 w-full flex items-center justify-center">
+                    <NumberCircle
+                      key={`circle-${card.value}-${card.date}-${index}`}
+                      title={card.value}
+                      topText={card.topText}
+                      bottomText={card.bottomText}
+                      width={200}
+                      height={200}
+                      startColor={startColor}
+                      endColor={endColor}
+                      backgroundImage={"images/nfts/minute_2024-10-10_12_06_0.png"}
+                      backgroundImageOpacity={0.3}
+                    />
+                  </div>
+                  {/*<Image*/}
+                  {/*  width={100}*/}
+                  {/*  height={100}*/}
+                  {/*  src={card.src}*/}
+                  {/*  alt={card.title}*/}
+                  {/*  className="h-60 w-full  rounded-lg object-cover object-top"*/}
+                  {/*/>*/}
+                </motion.div>
+                {/*<div className="flex justify-center items-center flex-col">*/}
+                {/*  <motion.h3*/}
+                {/*    layoutId={`title-${card.title}-${id}`}*/}
+                {/*    className="font-medium text-neutral-800 dark:text-neutral-200 text-center md:text-left text-base"*/}
+                {/*  >*/}
+                {/*    {card.title}*/}
+                {/*  </motion.h3>*/}
+                {/*  <motion.p*/}
+                {/*    layoutId={`description-${card.description}-${id}`}*/}
+                {/*    className="text-neutral-600 dark:text-neutral-400 text-center md:text-left text-base"*/}
+                {/*  >*/}
+                {/*    {card.description}*/}
+                {/*  </motion.p>*/}
+                {/*</div>*/}
+              </div>
+            </motion.div>
+          );
+        })}
       </ul>
     </>
   );

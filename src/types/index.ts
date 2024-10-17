@@ -29,10 +29,10 @@ export enum EpochRarity {
 }
 
 export const rarityGradientColors: Record<EpochRarity, { start: string; end: string }> = {
-  [EpochRarity.Common]: { start: "#ff7e5f", end: "#feb47b" },
-  [EpochRarity.Rare]: { start: "#ff6a00", end: "#ee0979" },
-  [EpochRarity.Epic]: { start: "#4a00e0", end: "#8e2de2" },
-  [EpochRarity.Legendary]: { start: "#a8e063", end: "#56ab2f" },
+  [EpochRarity.Common]: { start: "#d3d3d3", end: "#f5f5f5" }, // Light, simple, and neutral for common
+  [EpochRarity.Rare]: { start: "#00c6ff", end: "#0072ff" }, // Blue gradient for rarity, evoking a sense of something special
+  [EpochRarity.Epic]: { start: "#8a2be2", end: "#4b0082" }, // Deep purple and indigo for epic, indicating prestige and value
+  [EpochRarity.Legendary]: { start: "#ffd700", end: "#ff8c00" }, // Gold and orange for legendary, symbolizing something highly valuable and unique
 };
 
 export interface EpochSnapshot {
@@ -75,6 +75,17 @@ export interface TimeCard {
   status?: EpochStatus;
   nft?: string;
   content?: () => React.ReactNode;
+}
+
+export interface TimeCardsResponse {
+  cards: TimeCard[];
+  pastCards: TimeCard[];
+  futureCards: TimeCard[];
+}
+
+export interface TimelineEntry {
+  title: string;
+  content: React.ReactNode;
 }
 
 export interface WriteDataResponse {

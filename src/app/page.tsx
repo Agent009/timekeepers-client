@@ -1,14 +1,14 @@
 "use client";
-import React, { useCallback, useEffect, useState, useTransition } from "react";
+import React, { useCallback, useEffect, useState, useTransition, useRef, useMemo } from "react";
 import CircularProgress, { circularProgressClasses } from "@mui/material/CircularProgress";
-import { EpochData, EpochType } from "@customTypes/index";
+import { EpochData, EpochSnapshot, EpochType, TimeCardsResponse } from "@customTypes/index";
 import ExpandableCard from "@components/blocks/expandableCardGrid";
 import { getApiUrl } from "@lib/api";
 import { constants } from "@lib/constants";
 import { getCurrentEpoch, getEpochSnapshot, getFutureEpochs } from "@lib/epochUtils";
 import { textToImage } from "@lib/server/livepeer";
-import { Timeline } from "@ui/timeline";
 import { getTimeCards } from "@lib/timeCards";
+import { Timeline } from "@ui/timeline";
 import { CountdownTimer } from "@ui/timer";
 
 export default function Home() {
@@ -18,8 +18,11 @@ export default function Home() {
   const [images, setImages] = useState<string[]>([]);
   const [isMounted, setIsMounted] = useState(false);
   const futureSlots = 3;
-  const [isFetching, setIsFetching] = useState(false); // State to track fetching status
-  // console.log("page -> isMounted", isMounted, "isPending", isPending);
+  const [minuteCards, setMinuteCards] = useState<TimeCardsResponse>();
+  // Mutable ref object that persists for the full lifetime of the component.
+  // It does not cause re-renders when its value changes, and hence solves the infinite re-renders issue.
+  const isFetchingRef = useRef(false);
+  console.log("page -> isMounted", isMounted, "isPending", isPending, "isFetchingRef", isFetchingRef);
   // console.log("page -> data", data);
 
   const addData = useCallback(async (newEntry: EpochData, upsert: boolean = true) => {
@@ -40,18 +43,28 @@ export default function Home() {
   }, []);
 
   const fetchData = useCallback(async () => {
-    if (isFetching) return;
+    if (isFetchingRef.current) return; // Prevent multiple fetches
     console.log("page -> fetchData");
-    setIsFetching(true); // Set fetching status to true
-    // "/api/?startDate=2023-10-01&endDate=2023-10-02"
-    const response = await fetch(getApiUrl(constants.routes.api.data));
-    const result = await response.json();
-    setIsFetching(false);
-    setData(result);
-  }, [isFetching]);
+    isFetchingRef.current = true; // Set fetching status to true
+
+    try {
+      // "/api/?startDate=2023-10-01&endDate=2023-10-02"
+      const response = await fetch(getApiUrl(constants.routes.api.data));
+      const result = await response.json();
+      // console.log("page -> fetchData -> result", result);
+
+      if (!result?.error) {
+        setData(result);
+      }
+    } catch (error) {
+      console.error("page -> fetchData -> error", error);
+    } finally {
+      isFetchingRef.current = false; // Reset fetching status
+    }
+  }, []); // No dependencies, so it won't be recreated
 
   const handleEpochData = useCallback(
-    (type: EpochType) => {
+    (type: EpochType, snapshot: EpochSnapshot) => {
       console.log(`page -> handleEpochData -> ${type} epoch`);
 
       // Add current epoch data
@@ -60,7 +73,7 @@ export default function Home() {
         .then((r) => {
           const d: EpochData = r.document;
           const actionStr = r.updated ? "updated" : "added";
-          console.log(`page -> useEffect -> ${actionStr} ${type} epoch data`, d.value, d.rarity, r);
+          console.log(`page -> handleEpochData -> ${actionStr} ${type} epoch data`, d.value, d.rarity, r);
 
           // Only generate an image if the epoch data was stored for the first time.
           if (r.success && !r.updated && 0) {
@@ -75,18 +88,17 @@ export default function Home() {
               if (result.success) {
                 setImages((prevImages) => [...result.images, ...prevImages]);
               } else {
-                console.error(`Failed to generate ${type} epoch image`, result);
+                console.error(`page -> handleEpochData -> failed to generate ${type} epoch image`, result);
               }
             });
           }
         })
         .catch((error) => {
-          console.error(`Error adding ${type} epoch data:`, error.message);
+          console.error(`page -> handleEpochData -> error adding ${type} epoch data:`, error.message);
         });
 
       // Get future epochs
       const futureEpochs: EpochData[] = getFutureEpochs(type, snapshot.isoDateTime, futureSlots);
-
       // Filter out existing epochs
       const newFutureEpochs: EpochData[] = futureEpochs.filter((epoch) => {
         // Check if the epoch doesn't already exist in the data array
@@ -104,14 +116,14 @@ export default function Home() {
           .then((r) => {
             const d: EpochData = r.document;
             const actionStr = r.updated ? "updated" : "added";
-            console.log(`page -> useEffect -> ${actionStr} future ${type} epoch data`, d.value, d.rarity, r);
+            console.log(`page -> handleEpochData -> ${actionStr} future ${type} epoch data`, d.value, d.rarity, r);
           })
           .catch((error) => {
-            console.error(`page -> useEffect -> error adding future ${type} epoch data:`, error.message);
+            console.error(`page -> handleEpochData -> error adding future ${type} epoch data:`, error.message);
           });
       });
     },
-    [data, snapshot, addData],
+    [data, addData],
   );
 
   // Fetch the epoch snapshot every second
@@ -153,40 +165,130 @@ export default function Home() {
       return;
     }
 
-    handleEpochData(EpochType.Minute);
+    handleEpochData(EpochType.Minute, snapshot);
+    setMinuteCards(getTimeCards(EpochType.Minute, snapshot.minute, snapshot.fullDateTime, data));
   }, [isMounted, handleEpochData, snapshot.minute]);
 
-  useEffect(() => {
-    if (!isMounted) {
-      return;
-    }
+  // useEffect(() => {
+  //   if (!isMounted) {
+  //     return;
+  //   }
+  //
+  //   handleEpochData(EpochType.Hour, snapshot);
+  // }, [isMounted, handleEpochData, snapshot.hour]);
+  //
+  // useEffect(() => {
+  //   if (!isMounted) {
+  //     return;
+  //   }
+  //
+  //   handleEpochData(EpochType.Day, snapshot);
+  // }, [isMounted, handleEpochData, snapshot.dayOfMonth]);
+  //
+  // useEffect(() => {
+  //   if (!isMounted) {
+  //     return;
+  //   }
+  //
+  //   handleEpochData(EpochType.Month, snapshot);
+  // }, [isMounted, handleEpochData, snapshot.month]);
+  //
+  // useEffect(() => {
+  //   if (!isMounted) {
+  //     return;
+  //   }
+  //
+  //   handleEpochData(EpochType.Year, snapshot);
+  // }, [isMounted, handleEpochData, snapshot.year]);
 
-    handleEpochData(EpochType.Hour);
-  }, [isMounted, handleEpochData, snapshot.hour]);
+  const timelineData = useMemo(() => {
+    return [
+      {
+        title: "Minute " + snapshot.minute,
+        content: (
+          <div>
+            <div className="flex flex-col items-center justify-center gap-2 my-3">
+              <h2 className="mb-4 text-xl font-semibold">Minted & Upcoming Epochs</h2>
+              <div className="grid grid-cols-3 gap-2">
+                <ExpandableCard cards={minuteCards?.pastCards || []} />
+                <CountdownTimer key={snapshot.minute} duration={60} initialRemainingTime={60 - snapshot.second} />
+                <ExpandableCard cards={minuteCards?.futureCards || []} />
+              </div>
+            </div>
+            <div className="flex items-center justify-center gap-2 my-3">
+              {isPending && (
+                <CircularProgress
+                  variant="indeterminate"
+                  disableShrink
+                  sx={(theme) => ({
+                    color: "#1a90ff",
+                    animationDuration: "550ms",
+                    position: "absolute",
+                    left: 0,
+                    [`& .${circularProgressClasses.circle}`]: {
+                      strokeLinecap: "round",
+                    },
+                    ...theme.applyStyles("dark", {
+                      color: "#308fe8",
+                    }),
+                  })}
+                  size={40}
+                  thickness={4}
+                />
+              )}
+              {images.length > 0 && (
+                <div className="mt-8">
+                  <h2 className="mb-4 text-xl font-semibold">Minted NFTs</h2>
+                  <div className="grid grid-cols-2 gap-4">
+                    {images.map((src, index) => (
+                      <img
+                        key={index}
+                        src={src}
+                        alt={`Generated Image ${index + 1}`}
+                        className="h-auto w-full rounded-lg shadow-md"
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        ),
+      },
+      {
+        title: "Hour " + snapshot.hour,
+        content: <div>It's coming.</div>,
+      },
+      {
+        title: "" + snapshot.dayName,
+        content: (
+          <div>
+            {snapshot.fullDate}
+            <br />
+            It's coming.
+          </div>
+        ),
+      },
+      {
+        title: "" + snapshot.monthName,
+        content: (
+          <div>
+            {snapshot.year}
+            <br />
+            It's coming.
+          </div>
+        ),
+      },
+      {
+        title: "" + snapshot.year,
+        content: <div>It's coming.</div>,
+      },
+    ];
+  }, [snapshot.minute, minuteCards]);
 
-  useEffect(() => {
-    if (!isMounted) {
-      return;
-    }
-
-    handleEpochData(EpochType.Day);
-  }, [isMounted, handleEpochData, snapshot.dayOfMonth]);
-
-  useEffect(() => {
-    if (!isMounted) {
-      return;
-    }
-
-    handleEpochData(EpochType.Month);
-  }, [isMounted, handleEpochData, snapshot.month]);
-
-  useEffect(() => {
-    if (!isMounted) {
-      return;
-    }
-
-    handleEpochData(EpochType.Year);
-  }, [isMounted, handleEpochData, snapshot.year]);
+  // const TimelineMemo = React.memo(({ data }: { data: TimelineEntry[] }) => {
+  //   return <Timeline data={data} />;
+  // });
 
   if (!isMounted) {
     return (
@@ -196,7 +298,6 @@ export default function Home() {
     );
   }
 
-  const minuteCards = getTimeCards(EpochType.Minute, snapshot.minute, snapshot.fullDateTime, data);
   // console.log(
   //   "page -> minuteCards",
   //   minuteCards,
@@ -205,88 +306,6 @@ export default function Home() {
   //   "futureCards",
   //   minuteCards?.futureCards?.length,
   // );
-  const timelineData = [
-    {
-      title: "Minute " + snapshot.minute,
-      content: (
-        <div>
-          <div className="flex flex-col items-center justify-center gap-2 my-3">
-            <h2 className="mb-4 text-xl font-semibold">Minted & Upcoming Epochs</h2>
-            <div className="grid grid-cols-3 gap-2">
-              <ExpandableCard cards={minuteCards?.pastCards} />
-              <CountdownTimer key={snapshot.minute} duration={60} initialRemainingTime={60 - snapshot.second} />
-              <ExpandableCard cards={minuteCards?.futureCards} />
-            </div>
-          </div>
-          <div className="flex items-center justify-center gap-2 my-3">
-            {isPending && (
-              <CircularProgress
-                variant="indeterminate"
-                disableShrink
-                sx={(theme) => ({
-                  color: "#1a90ff",
-                  animationDuration: "550ms",
-                  position: "absolute",
-                  left: 0,
-                  [`& .${circularProgressClasses.circle}`]: {
-                    strokeLinecap: "round",
-                  },
-                  ...theme.applyStyles("dark", {
-                    color: "#308fe8",
-                  }),
-                })}
-                size={40}
-                thickness={4}
-              />
-            )}
-            {images.length > 0 && (
-              <div className="mt-8">
-                <h2 className="mb-4 text-xl font-semibold">Minted NFTs</h2>
-                <div className="grid grid-cols-2 gap-4">
-                  {images.map((src, index) => (
-                    <img
-                      key={index}
-                      src={src}
-                      alt={`Generated Image ${index + 1}`}
-                      className="h-auto w-full rounded-lg shadow-md"
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      ),
-    },
-    {
-      title: "Hour " + snapshot.hour,
-      content: <div>It's coming.</div>,
-    },
-    {
-      title: "" + snapshot.dayName,
-      content: (
-        <div>
-          {snapshot.fullDate}
-          <br />
-          It's coming.
-        </div>
-      ),
-    },
-    {
-      title: "" + snapshot.monthName,
-      content: (
-        <div>
-          {snapshot.year}
-          <br />
-          It's coming.
-        </div>
-      ),
-    },
-    {
-      title: "" + snapshot.year,
-      content: <div>It's coming.</div>,
-    },
-  ];
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">

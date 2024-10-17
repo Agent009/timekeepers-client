@@ -1,5 +1,5 @@
 import React from "react";
-import { EpochData, EpochRarity, EpochStatus, EpochType, TimeCard } from "@customTypes/index";
+import { EpochData, EpochRarity, EpochStatus, EpochType, TimeCard, TimeCardsResponse } from "@customTypes/index";
 import dayjs from "dayjs";
 import { getFutureEpochs } from "@lib/epochUtils.ts";
 
@@ -60,7 +60,12 @@ export const generateCardContent = (
   );
 };
 
-export const getTimeCards = (epochType: EpochType, currentVal: number, ymdhmDate: string, epochData: EpochData[]) => {
+export const getTimeCards = (
+  epochType: EpochType,
+  currentVal: number,
+  ymdhmDate: string,
+  epochData: EpochData[],
+): TimeCardsResponse => {
   const maxBefore = 2;
   const maxAfter = 2;
   const pastCards: TimeCard[] = [];
@@ -82,7 +87,7 @@ export const getTimeCards = (epochType: EpochType, currentVal: number, ymdhmDate
           return b.ymdhmDate.localeCompare(a.ymdhmDate);
         })) ||
     [];
-  console.log("timeCards -> getTimeCards -> epoch", epochType, currentVal, "filteredEpochs", filteredEpochs);
+  // console.log("timeCards -> getTimeCards -> epoch", epochType, currentVal, "filteredEpochs", filteredEpochs);
 
   // Generate cards for epochs before the current value
   for (let i = 0; i < maxBefore; i++) {

@@ -33,7 +33,7 @@ export async function GET(request: Request) {
     const data = await Epoch.find(query);
     return NextResponse.json(data, { status: 200 });
   } catch (error) {
-    console.error("Error reading data:", error);
+    console.error("api -> GET data -> error reading data:", error);
     return NextResponse.json({ error: "Error reading data" }, { status: 500 });
   }
 }
