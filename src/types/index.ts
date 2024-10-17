@@ -65,8 +65,8 @@ export interface EpochData {
 }
 
 export interface TimeCard {
-  title: string;
-  description: string;
+  type: string;
+  value: string;
   topText?: string;
   bottomText?: string;
   date: Date;

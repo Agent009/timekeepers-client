@@ -61,7 +61,7 @@ export const constants = Object.freeze({
     sitemap: "/sitemap.xml",
     api: {
       base: cwaServerUrl + (cwaServerUrl?.charAt(cwaServerUrl?.length - 1) !== "/" ? "/" : "") + "api/",
-      data: "data",
+      data: "data?upsert=:upsert",
       nft: "nft",
     },
   },

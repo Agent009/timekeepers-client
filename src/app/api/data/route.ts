@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { RootFilterQuery } from "mongoose";
 import { EpochData, EpochType } from "@customTypes/index";
 import Epoch, { EpochDocument } from "@models/Epoch";
@@ -38,14 +38,16 @@ export async function GET(request: Request) {
   }
 }
 
-export async function POST(request) {
+export async function POST(request: NextRequest) {
   // console.log("api -> POST data");
 
   try {
+    const url = new URL(request.url);
+    const upsert = url.searchParams.get("upsert") === "true";
     const newEntry: EpochData = await request.json();
     console.log("api -> POST data -> newEntry", newEntry);
     const dateFieldToCheck = newEntry.type === EpochType.Minute ? "ymdhmDate" : "ymdDate";
-    const result = await upsertDocument(Epoch, newEntry, ["type", "value", dateFieldToCheck]);
+    const result = await upsertDocument(Epoch, newEntry, ["type", "value", dateFieldToCheck], upsert);
     return NextResponse.json(result, { status: 200 });
   } catch (error) {
     console.error("api -> POST data -> error", error);

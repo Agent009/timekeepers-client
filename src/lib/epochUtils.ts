@@ -28,29 +28,42 @@ export const randomRarity = (): EpochRarity => {
 };
 
 /**
- * Get the current epoch data based on the current snapshot and epoch type
+ * Get the epoch value based on the epoch type and snapshot
  * @param epochType
  * @param snapshot
  */
-export const getCurrentEpoch = (epochType: EpochType, snapshot: EpochSnapshot) => {
+export const getEpochValue = (epochType: EpochType, snapshot: EpochSnapshot): number => {
+  return epochType === EpochType.Minute
+    ? snapshot.minute
+    : epochType === EpochType.Hour
+      ? snapshot.hour
+      : epochType === EpochType.Day
+        ? snapshot.dayOfMonth
+        : epochType === EpochType.Month
+          ? snapshot.month
+          : snapshot.year;
+};
+
+/**
+ * Get the current epoch data based on the current snapshot and epoch type
+ * @param epochType
+ * @param snapshot
+ * @param data
+ */
+export const getCurrentEpoch = (epochType: EpochType, snapshot: EpochSnapshot, data?: EpochData[]) => {
+  const value = getEpochValue(epochType, snapshot);
+  const epochData: EpochData | undefined = data?.find(
+    (d) => d.type === epochType && d.value === value && d.ymdhmDate === snapshot.fullDateTime,
+  );
   return {
     type: epochType,
-    value:
-      epochType === EpochType.Minute
-        ? snapshot.minute
-        : epochType === EpochType.Hour
-          ? snapshot.hour
-          : epochType === EpochType.Day
-            ? snapshot.dayOfMonth
-            : epochType === EpochType.Month
-              ? snapshot.month
-              : snapshot.year,
+    value: value,
     isoDate: snapshot.isoDateTime,
     ymdDate: snapshot.fullDate,
     ymdhmDate: snapshot.fullDateTime,
     state: EpochState.Past,
     status: EpochStatus.Queued,
-    rarity: randomRarity(),
+    rarity: (epochData && epochData.rarity) || randomRarity(),
   };
 };
 

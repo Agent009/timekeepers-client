@@ -18,11 +18,12 @@ export default function Home() {
   const [images, setImages] = useState<string[]>([]);
   const [isMounted, setIsMounted] = useState(false);
   const futureSlots = 3;
+  const [isFetching, setIsFetching] = useState(false); // State to track fetching status
   // console.log("page -> isMounted", isMounted, "isPending", isPending);
   // console.log("page -> data", data);
 
-  const addData = useCallback(async (newEntry: EpochData) => {
-    const response = await fetch(getApiUrl(constants.routes.api.data), {
+  const addData = useCallback(async (newEntry: EpochData, upsert: boolean = true) => {
+    const response = await fetch(getApiUrl(constants.routes.api.data, { upsert: upsert }), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -39,12 +40,79 @@ export default function Home() {
   }, []);
 
   const fetchData = useCallback(async () => {
+    if (isFetching) return;
     console.log("page -> fetchData");
+    setIsFetching(true); // Set fetching status to true
     // "/api/?startDate=2023-10-01&endDate=2023-10-02"
     const response = await fetch(getApiUrl(constants.routes.api.data));
     const result = await response.json();
+    setIsFetching(false);
     setData(result);
-  }, []);
+  }, [isFetching]);
+
+  const handleEpochData = useCallback(
+    (type: EpochType) => {
+      console.log(`page -> handleEpochData -> ${type} epoch`);
+
+      // Add current epoch data
+      // TODO: Ensure adding the current epoch doesn't replace previously generated future epochs.
+      addData(getCurrentEpoch(type, snapshot, data))
+        .then((r) => {
+          const d: EpochData = r.document;
+          const actionStr = r.updated ? "updated" : "added";
+          console.log(`page -> useEffect -> ${actionStr} ${type} epoch data`, d.value, d.rarity, r);
+
+          // Only generate an image if the epoch data was stored for the first time.
+          if (r.success && !r.updated && 0) {
+            startTransition(async () => {
+              const result = await textToImage({
+                prompt: "A beautiful sunset on a beach with the following text in the bottom right: " + d.ymdhmDate,
+                seed: d.value,
+                epochType: d.type,
+                ymdhmDate: d.ymdhmDate,
+              });
+
+              if (result.success) {
+                setImages((prevImages) => [...result.images, ...prevImages]);
+              } else {
+                console.error(`Failed to generate ${type} epoch image`, result);
+              }
+            });
+          }
+        })
+        .catch((error) => {
+          console.error(`Error adding ${type} epoch data:`, error.message);
+        });
+
+      // Get future epochs
+      const futureEpochs: EpochData[] = getFutureEpochs(type, snapshot.isoDateTime, futureSlots);
+
+      // Filter out existing epochs
+      const newFutureEpochs: EpochData[] = futureEpochs.filter((epoch) => {
+        // Check if the epoch doesn't already exist in the data array
+        return !data.some(
+          (existingEpoch) =>
+            existingEpoch.type === epoch.type &&
+            existingEpoch.value === epoch.value &&
+            existingEpoch.ymdhmDate === epoch.ymdhmDate,
+        );
+      });
+
+      // Add only new future epochs
+      newFutureEpochs.forEach((epoch) => {
+        addData(epoch, false)
+          .then((r) => {
+            const d: EpochData = r.document;
+            const actionStr = r.updated ? "updated" : "added";
+            console.log(`page -> useEffect -> ${actionStr} future ${type} epoch data`, d.value, d.rarity, r);
+          })
+          .catch((error) => {
+            console.error(`page -> useEffect -> error adding future ${type} epoch data:`, error.message);
+          });
+      });
+    },
+    [data, snapshot, addData],
+  );
 
   // Fetch the epoch snapshot every second
   useEffect(() => {
@@ -55,10 +123,21 @@ export default function Home() {
 
     return () => clearInterval(intervalId); // Cleanup interval on component unmount
   }, []);
+
   // Fetch the data every 10 seconds
   useEffect(() => {
     console.log("page -> useEffect -> init -> fetchData");
-    fetchData().then(() => setIsMounted(true));
+    const fetchAndSetData = async () => {
+      try {
+        await fetchData();
+        setIsMounted(true);
+      } catch (error) {
+        console.error("page -> useEffect -> init -> fetchAndSetData -> error", error);
+      }
+    };
+
+    // Initial fetch
+    fetchAndSetData().then(() => console.log("page -> useEffect -> init -> fetchAndSetData success"));
 
     const intervalId = setInterval(() => {
       // noinspection JSIgnoredPromiseFromCall
@@ -66,7 +145,7 @@ export default function Home() {
     }, 10500);
 
     return () => clearInterval(intervalId); // Cleanup interval on component unmount
-  }, []);
+  }, [fetchData]);
 
   // Calculate and store the currently elapsed and future epochs
   useEffect(() => {
@@ -74,146 +153,40 @@ export default function Home() {
       return;
     }
 
-    // Store the currently elapsed epoch
-    console.log("page -> useEffect -> minute epoch");
-    addData(getCurrentEpoch(EpochType.Minute, snapshot))
-      .then((r) => {
-        console.log("Added minute epoch data", r);
-
-        // Only generate an image if the epoch data was stored for the first time.
-        if (r.success && !r.updated && 0) {
-          startTransition(async () => {
-            const result = await textToImage({
-              prompt:
-                "A beautiful sunset on a beach with the following text in the bottom right: " + snapshot.fullDateTime,
-              seed: snapshot.minute,
-              epochType: EpochType.Minute,
-              ymdhmDate: snapshot.fullDateTime,
-            });
-
-            if (result.success) {
-              setImages((prevImages) => [...result.images, ...prevImages]);
-            } else {
-              console.error("Failed to generate minute epoch image", result);
-            }
-          });
-        }
-      })
-      .catch((error) => {
-        console.error("Error adding minute epoch data:", error.message);
-      });
-
-    // Calculate and store the future epochs
-    getFutureEpochs(EpochType.Minute, snapshot.isoDateTime, futureSlots).forEach((epoch) => {
-      addData(epoch)
-        .then((r) => {
-          console.log("page -> useEffect -> added future minute epoch data", r);
-        })
-        .catch((error) => {
-          console.error("page -> useEffect -> error adding future minute epoch data:", error.message);
-        });
-    });
-  }, [isMounted, snapshot.minute, addData]);
+    handleEpochData(EpochType.Minute);
+  }, [isMounted, handleEpochData, snapshot.minute]);
 
   useEffect(() => {
     if (!isMounted) {
       return;
     }
 
-    console.log("page -> useEffect -> hour epoch");
-    addData(getCurrentEpoch(EpochType.Hour, snapshot))
-      .then((r) => {
-        console.log("Added hour epoch data", r);
-      })
-      .catch((error) => {
-        console.error("Error adding hour epoch data:", error.message);
-      });
-
-    getFutureEpochs(EpochType.Hour, snapshot.isoDateTime, futureSlots).forEach((epoch) => {
-      addData(epoch)
-        .then((r) => {
-          console.log("page -> useEffect -> added future hour epoch data", r);
-        })
-        .catch((error) => {
-          console.error("page -> useEffect -> error adding future hour epoch data:", error.message);
-        });
-    });
-  }, [isMounted, snapshot.hour, addData]);
+    handleEpochData(EpochType.Hour);
+  }, [isMounted, handleEpochData, snapshot.hour]);
 
   useEffect(() => {
     if (!isMounted) {
       return;
     }
 
-    console.log("page -> useEffect -> day epoch");
-    addData(getCurrentEpoch(EpochType.Day, snapshot))
-      .then((r) => {
-        console.log("Added day epoch data", r);
-      })
-      .catch((error) => {
-        console.error("Error adding day epoch data:", error.message);
-      });
-
-    getFutureEpochs(EpochType.Day, snapshot.isoDateTime, futureSlots).forEach((epoch) => {
-      addData(epoch)
-        .then((r) => {
-          console.log("page -> useEffect -> added future day epoch data", r);
-        })
-        .catch((error) => {
-          console.error("page -> useEffect -> error adding future day epoch data:", error.message);
-        });
-    });
-  }, [isMounted, snapshot.dayOfMonth, addData]);
+    handleEpochData(EpochType.Day);
+  }, [isMounted, handleEpochData, snapshot.dayOfMonth]);
 
   useEffect(() => {
     if (!isMounted) {
       return;
     }
 
-    console.log("page -> useEffect -> month epoch");
-    addData(getCurrentEpoch(EpochType.Month, snapshot))
-      .then((r) => {
-        console.log("Added month epoch data", r);
-      })
-      .catch((error) => {
-        console.error("Error adding month epoch data:", error.message);
-      });
-
-    getFutureEpochs(EpochType.Month, snapshot.isoDateTime, futureSlots).forEach((epoch) => {
-      addData(epoch)
-        .then((r) => {
-          console.log("page -> useEffect -> added future month epoch data", r);
-        })
-        .catch((error) => {
-          console.error("page -> useEffect -> error adding future month epoch data:", error.message);
-        });
-    });
-  }, [isMounted, snapshot.month, addData]);
+    handleEpochData(EpochType.Month);
+  }, [isMounted, handleEpochData, snapshot.month]);
 
   useEffect(() => {
     if (!isMounted) {
       return;
     }
 
-    console.log("page -> useEffect -> year epoch");
-    addData(getCurrentEpoch(EpochType.Year, snapshot))
-      .then((r) => {
-        console.log("Added year epoch data", r);
-      })
-      .catch((error) => {
-        console.error("Error adding year epoch data:", error.message);
-      });
-
-    getFutureEpochs(EpochType.Year, snapshot.isoDateTime, futureSlots).forEach((epoch) => {
-      addData(epoch)
-        .then((r) => {
-          console.log("page -> useEffect -> added future year epoch data", r);
-        })
-        .catch((error) => {
-          console.error("page -> useEffect -> error adding future year epoch data:", error.message);
-        });
-    });
-  }, [isMounted, snapshot.year, addData]);
+    handleEpochData(EpochType.Year);
+  }, [isMounted, handleEpochData, snapshot.year]);
 
   if (!isMounted) {
     return (

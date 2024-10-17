@@ -4,7 +4,8 @@ import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { useOutsideClick } from "@lib/hooks/use-outside-click";
 import { NumberCircle } from "@components/icons/numberCircle";
-import { TimeCard, rarityGradientColors, EpochRarity } from "@customTypes/index";
+import { TimeCard, rarityGradientColors } from "@customTypes/index";
+import dayjs from "dayjs";
 
 type Props = { cards: TimeCard[] };
 export default function ExpandableCard({ cards }: Props) {
@@ -47,7 +48,7 @@ export default function ExpandableCard({ cards }: Props) {
         {active && typeof active === "object" ? (
           <div className="fixed inset-0  grid place-items-center z-[100]">
             <motion.button
-              key={`button-${active.title}-${id}`}
+              key={`button-${active.value}-${id}`}
               layout
               initial={{
                 opacity: 0,
@@ -67,20 +68,22 @@ export default function ExpandableCard({ cards }: Props) {
               <CloseIcon />
             </motion.button>
             <motion.div
-              layoutId={`card-${active.title}-${id}`}
+              layoutId={`card-${active.value}-${id}`}
               ref={ref}
               className="w-full max-w-[500px]  h-full md:h-fit md:max-h-[90%]  flex flex-col bg-white dark:bg-neutral-900 sm:rounded-3xl overflow-hidden"
             >
-              <motion.div layoutId={`image-${active.title}-${id}`}>
+              <motion.div layoutId={`image-${active.value}-${id}`}>
                 <div className="w-full h-80 lg:h-80 flex items-center justify-center">
                   <NumberCircle
-                    title={active.title}
-                    topText={active.topText}
-                    bottomText={active.bottomText}
+                    // title={active.value}
+                    // topText={active.topText}
+                    // bottomText={active.bottomText}
                     width={200}
                     height={200}
                     startColor={active.rarity ? rarityGradientColors[active.rarity].start : undefined}
                     endColor={active.rarity ? rarityGradientColors[active.rarity].end : undefined}
+                    backgroundImage={"images/nfts/minute_2024-10-10_12_06_0.png"}
+                    backgroundImageOpacity={1}
                   />
                 </div>
 
@@ -90,7 +93,7 @@ export default function ExpandableCard({ cards }: Props) {
                     width={200}
                     height={200}
                     src={active.nft}
-                    alt={active.title}
+                    alt={active.value}
                     className="w-full h-80 lg:h-80 sm:rounded-tr-lg sm:rounded-tl-lg object-cover object-top"
                   />
                 )}
@@ -100,22 +103,22 @@ export default function ExpandableCard({ cards }: Props) {
                 <div className="flex justify-between items-start p-4">
                   <div className="">
                     <motion.h3
-                      layoutId={`title-${active.title}-${id}`}
+                      layoutId={`title-${active.value}-${id}`}
                       className="font-medium text-neutral-700 dark:text-neutral-200 text-base"
                     >
-                      {active.title}
+                      {active.type}: {active.value}
                     </motion.h3>
                     <motion.p
-                      layoutId={`description-${active.description}-${id}`}
+                      layoutId={`description-${active.date}-${id}`}
                       className="text-neutral-600 dark:text-neutral-400 text-base"
                     >
-                      {active.description}
+                      date: {dayjs(active.date).format("YYYY-MM-DD HH:mm")}
                     </motion.p>
                     <motion.p
                       layoutId={`rarity-${active.rarity}-${id}`}
                       className="text-neutral-600 dark:text-neutral-400 text-base"
                     >
-                      {active.rarity}
+                      rarity: {active.rarity}
                     </motion.p>
                     <motion.p
                       layoutId={`minted-${active.minted}-${id}`}
@@ -127,7 +130,7 @@ export default function ExpandableCard({ cards }: Props) {
                       layoutId={`status-${active.status}-${id}`}
                       className="text-neutral-600 dark:text-neutral-400 text-base"
                     >
-                      {active.status}
+                      status: {active.status}
                     </motion.p>
                   </div>
 
@@ -162,22 +165,24 @@ export default function ExpandableCard({ cards }: Props) {
       <ul className="max-w-2xl mx-auto w-full flex flex-row justify-center">
         {cards.map((card, index) => (
           <motion.div
-            layoutId={`card-${card.title}-${id}`}
-            key={`${card.title}-${card.date}-${index}`}
+            layoutId={`card-${card.value}-${id}`}
+            key={`${card.value}-${card.date}-${index}`}
             onClick={() => setActive(card)}
             className="p-2 flex flex-col hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-xl cursor-pointer"
           >
             <div className="flex flex-col w-full">
-              <motion.div layoutId={`image-${card.title}-${id}`}>
+              <motion.div layoutId={`image-${card.value}-${id}`}>
                 <div className="h-50 w-full flex items-center justify-center">
                   <NumberCircle
-                    title={card.title}
+                    title={card.value}
                     topText={card.topText}
                     bottomText={card.bottomText}
                     width={200}
                     height={200}
                     startColor={card.rarity ? rarityGradientColors[card.rarity].start : undefined}
                     endColor={card.rarity ? rarityGradientColors[card.rarity].end : undefined}
+                    backgroundImage={"images/nfts/minute_2024-10-10_12_06_0.png"}
+                    backgroundImageOpacity={0.3}
                   />
                 </div>
                 {/*<Image*/}

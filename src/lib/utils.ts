@@ -15,7 +15,7 @@ export function cn(...inputs: ClassValue[]) {
  * @param model - The Mongoose model representing the collection.
  * @param newData - The new data to upsert. Must be a partial object that matches the document type.
  * @param uniqueFields - An array of keys from the document type that should be used to identify unique documents.
- *
+ * @param upsert
  * @returns A promise that resolves to an `UpsertResult` object.
  * - `success` is `true` if the operation was successful.
  * - `updated` is `true` if an existing document was updated, `false` if a new document was created.
@@ -25,6 +25,7 @@ export async function upsertDocument<T extends Document>(
   model: Model<T>,
   newData: Partial<T>,
   uniqueFields: (keyof T)[],
+  upsert: boolean = true,
 ): Promise<UpsertResult<T>> {
   // Create a query object from the unique fields and their corresponding values from the new data.
   const query = Object.fromEntries(uniqueFields.map((field) => [field, newData[field]]));
@@ -34,6 +35,10 @@ export async function upsertDocument<T extends Document>(
   const existingDocument = await model.findOne(query);
 
   if (existingDocument) {
+    if (!upsert) {
+      return { success: true, updated: false, document: existingDocument as T };
+    }
+
     Object.assign(existingDocument, newData);
     const updatedDocument = await existingDocument.save();
     return { success: true, updated: true, document: updatedDocument as T };

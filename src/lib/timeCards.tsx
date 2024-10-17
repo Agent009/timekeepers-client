@@ -34,8 +34,8 @@ export const generateCard = (
   }
 
   return {
-    title: String(currentVal),
-    description: epochType,
+    type: epochType,
+    value: String(currentVal),
     topText: epochType,
     bottomText: bottomText,
     date: new Date(ymdhmDate),
