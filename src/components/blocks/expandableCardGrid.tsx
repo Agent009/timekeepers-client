@@ -103,6 +103,24 @@ export default function ExpandableCard({ cards }: Props) {
                     >
                       {active.description}
                     </motion.p>
+                    <motion.p
+                      layoutId={`rarity-${active.rarity}-${id}`}
+                      className="text-neutral-600 dark:text-neutral-400 text-base"
+                    >
+                      {active.rarity}
+                    </motion.p>
+                    <motion.p
+                      layoutId={`minted-${active.minted}-${id}`}
+                      className="text-neutral-600 dark:text-neutral-400 text-base"
+                    >
+                      {active.minted}
+                    </motion.p>
+                    <motion.p
+                      layoutId={`status-${active.status}-${id}`}
+                      className="text-neutral-600 dark:text-neutral-400 text-base"
+                    >
+                      {active.status}
+                    </motion.p>
                   </div>
 
                   {/*<motion.a*/}

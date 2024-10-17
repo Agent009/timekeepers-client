@@ -28,17 +28,21 @@ export enum EpochRarity {
   Legendary = "legendary",
 }
 
-export interface TimeCard {
-  title: string;
-  description: string;
-  topText?: string;
-  bottomText?: string;
-  date: Date;
-  minted?: boolean;
-  rarity?: EpochRarity;
-  status?: EpochStatus;
-  nft?: string;
-  content?: () => React.ReactNode;
+export interface EpochSnapshot {
+  second: number;
+  minute: number;
+  hour: number;
+  dayOfWeek: number;
+  dayOfMonth: number;
+  month: number;
+  year: number;
+  dayName: string;
+  monthName: string;
+  fullDate: string;
+  time: string;
+  fullDateTime: string;
+  isoDateTime: string;
+  unix: number;
 }
 
 export interface EpochData {
@@ -53,6 +57,19 @@ export interface EpochData {
   rarity?: EpochRarity;
 }
 
+export interface TimeCard {
+  title: string;
+  description: string;
+  topText?: string;
+  bottomText?: string;
+  date: Date;
+  minted?: boolean;
+  rarity?: EpochRarity;
+  status?: EpochStatus;
+  nft?: string;
+  content?: () => React.ReactNode;
+}
+
 export interface WriteDataResponse {
   success: boolean;
   updated?: boolean;
@@ -63,4 +80,10 @@ export type RegisterPayload = {
   email: FormDataEntryValue;
   password: FormDataEntryValue;
   name?: FormDataEntryValue | null;
+};
+
+export type UpsertResult<T> = {
+  success: boolean;
+  updated: boolean;
+  document: T;
 };

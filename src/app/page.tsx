@@ -1,22 +1,23 @@
 "use client";
 import React, { useCallback, useEffect, useState, useTransition } from "react";
 import CircularProgress, { circularProgressClasses } from "@mui/material/CircularProgress";
-import { EpochData, EpochState, EpochStatus, EpochType } from "@customTypes/index";
+import { EpochData, EpochType } from "@customTypes/index";
 import ExpandableCard from "@components/blocks/expandableCardGrid";
 import { getApiUrl } from "@lib/api";
 import { constants } from "@lib/constants";
+import { getCurrentEpoch, getEpochSnapshot, getFutureEpochs } from "@lib/epochUtils";
 import { textToImage } from "@lib/server/livepeer";
-import { getEpochSnapshot, randomRarity } from "@lib/utils";
 import { Timeline } from "@ui/timeline";
 import { getTimeCards } from "@lib/timeCards";
 import { CountdownTimer } from "@ui/timer";
 
 export default function Home() {
   const [data, setData] = useState<EpochData[]>([]);
-  const [epoches, setEpoches] = useState(getEpochSnapshot());
+  const [snapshot, setSnapshot] = useState(getEpochSnapshot());
   const [isPending, startTransition] = useTransition();
   const [images, setImages] = useState<string[]>([]);
   const [isMounted, setIsMounted] = useState(false);
+  const futureSlots = 3;
   // console.log("page -> isMounted", isMounted, "isPending", isPending);
   // console.log("page -> data", data);
 
@@ -37,52 +38,47 @@ export default function Home() {
     return await response.json(); // Return the parsed JSON response
   }, []);
 
+  // Fetch the epoch snapshot every second
   useEffect(() => {
     const fetchData = async () => {
       // "/api/?startDate=2023-10-01&endDate=2023-10-02"
-      console.log("page -> useEffect -> fetchData");
+      console.log("page -> useEffect -> init -> fetchData");
       const response = await fetch(getApiUrl(constants.routes.api.data));
       const result = await response.json();
       setData(result);
     };
 
+    console.log("page -> useEffect -> init -> fetchData and getEpochSnapshot");
     fetchData().then(() => setIsMounted(true));
 
     const intervalId = setInterval(() => {
-      setEpoches(getEpochSnapshot()); // Re-fetch the epoch snapshot every second
+      setSnapshot(getEpochSnapshot()); // Re-fetch the epoch snapshot every second
     }, 1000);
 
     return () => clearInterval(intervalId); // Cleanup interval on component unmount
   }, []);
 
+  // Calculate and store the currently elapsed and future epochs
   useEffect(() => {
     if (!isMounted) {
       return;
     }
 
-    console.log("page -> useEffect -> addData -> minute epoch");
-    addData({
-      type: EpochType.Minute,
-      value: epoches.minute,
-      isoDate: epoches.isoDateTime,
-      ymdDate: epoches.fullDate,
-      ymdhmDate: epoches.fullDateTime,
-      state: EpochState.Past,
-      status: EpochStatus.Queued,
-      rarity: randomRarity(),
-    })
+    // Store the currently elapsed epoch
+    console.log("page -> useEffect -> minute epoch");
+    addData(getCurrentEpoch(EpochType.Minute, snapshot))
       .then((r) => {
         console.log("Added minute epoch data", r);
 
         // Only generate an image if the epoch data was stored for the first time.
-        if (r.success && !r.updated) {
+        if (r.success && !r.updated && 0) {
           startTransition(async () => {
             const result = await textToImage({
               prompt:
-                "A beautiful sunset on a beach with the following text in the bottom right: " + epoches.fullDateTime,
-              seed: epoches.minute,
+                "A beautiful sunset on a beach with the following text in the bottom right: " + snapshot.fullDateTime,
+              seed: snapshot.minute,
               epochType: EpochType.Minute,
-              ymdhmDate: epoches.fullDateTime,
+              ymdhmDate: snapshot.fullDateTime,
             });
 
             if (result.success) {
@@ -96,88 +92,135 @@ export default function Home() {
       .catch((error) => {
         console.error("Error adding minute epoch data:", error.message);
       });
-  }, [isMounted, epoches.minute]);
+
+    // Calculate and store the future epochs
+    getFutureEpochs(EpochType.Minute, snapshot.isoDateTime, futureSlots).forEach((epoch) => {
+      addData(epoch)
+        .then((r) => {
+          console.log("page -> useEffect -> added future minute epoch data", r);
+        })
+        .catch((error) => {
+          console.error("page -> useEffect -> error adding future minute epoch data:", error.message);
+        });
+    });
+  }, [isMounted, snapshot.minute, addData]);
 
   useEffect(() => {
     if (!isMounted) {
       return;
     }
 
-    console.log("page -> useEffect -> addData -> hour epoch");
-    addData({
-      type: EpochType.Hour,
-      value: epoches.hour,
-      isoDate: epoches.isoDateTime,
-      ymdDate: epoches.fullDate,
-      ymdhmDate: epoches.fullDateTime,
-      state: EpochState.Past,
-      status: EpochStatus.Queued,
-      rarity: randomRarity(),
-    })
+    console.log("page -> useEffect -> hour epoch");
+    addData(getCurrentEpoch(EpochType.Hour, snapshot))
       .then((r) => {
         console.log("Added hour epoch data", r);
       })
       .catch((error) => {
         console.error("Error adding hour epoch data:", error.message);
       });
-  }, [isMounted, epoches.hour]);
+
+    getFutureEpochs(EpochType.Hour, snapshot.isoDateTime, futureSlots).forEach((epoch) => {
+      addData(epoch)
+        .then((r) => {
+          console.log("page -> useEffect -> added future hour epoch data", r);
+        })
+        .catch((error) => {
+          console.error("page -> useEffect -> error adding future hour epoch data:", error.message);
+        });
+    });
+  }, [isMounted, snapshot.hour, addData]);
 
   useEffect(() => {
     if (!isMounted) {
       return;
     }
 
-    console.log("page -> useEffect -> addData -> day epoch");
-    addData({
-      type: EpochType.Day,
-      value: epoches.dayOfMonth,
-      isoDate: epoches.isoDateTime,
-      ymdDate: epoches.fullDate,
-      ymdhmDate: epoches.fullDateTime,
-      state: EpochState.Past,
-      status: EpochStatus.Queued,
-      rarity: randomRarity(),
-    })
+    console.log("page -> useEffect -> day epoch");
+    addData(getCurrentEpoch(EpochType.Day, snapshot))
       .then((r) => {
         console.log("Added day epoch data", r);
       })
       .catch((error) => {
         console.error("Error adding day epoch data:", error.message);
       });
-  }, [isMounted, epoches.dayOfMonth]);
+
+    getFutureEpochs(EpochType.Day, snapshot.isoDateTime, futureSlots).forEach((epoch) => {
+      addData(epoch)
+        .then((r) => {
+          console.log("page -> useEffect -> added future day epoch data", r);
+        })
+        .catch((error) => {
+          console.error("page -> useEffect -> error adding future day epoch data:", error.message);
+        });
+    });
+  }, [isMounted, snapshot.dayOfMonth, addData]);
 
   useEffect(() => {
     if (!isMounted) {
       return;
     }
 
-    console.log("page -> useEffect -> addData -> year epoch");
-    addData({
-      type: EpochType.Year,
-      value: epoches.year,
-      isoDate: epoches.isoDateTime,
-      ymdDate: epoches.fullDate,
-      ymdhmDate: epoches.fullDateTime,
-      state: EpochState.Past,
-      status: EpochStatus.Queued,
-      rarity: randomRarity(),
-    })
+    console.log("page -> useEffect -> month epoch");
+    addData(getCurrentEpoch(EpochType.Month, snapshot))
+      .then((r) => {
+        console.log("Added month epoch data", r);
+      })
+      .catch((error) => {
+        console.error("Error adding month epoch data:", error.message);
+      });
+
+    getFutureEpochs(EpochType.Month, snapshot.isoDateTime, futureSlots).forEach((epoch) => {
+      addData(epoch)
+        .then((r) => {
+          console.log("page -> useEffect -> added future month epoch data", r);
+        })
+        .catch((error) => {
+          console.error("page -> useEffect -> error adding future month epoch data:", error.message);
+        });
+    });
+  }, [isMounted, snapshot.month, addData]);
+
+  useEffect(() => {
+    if (!isMounted) {
+      return;
+    }
+
+    console.log("page -> useEffect -> year epoch");
+    addData(getCurrentEpoch(EpochType.Year, snapshot))
       .then((r) => {
         console.log("Added year epoch data", r);
       })
       .catch((error) => {
         console.error("Error adding year epoch data:", error.message);
       });
-  }, [isMounted, epoches.year]);
 
-  const minuteCards = getTimeCards(EpochType.Minute, epoches.minute, epoches.fullDateTime, data);
+    getFutureEpochs(EpochType.Year, snapshot.isoDateTime, futureSlots).forEach((epoch) => {
+      addData(epoch)
+        .then((r) => {
+          console.log("page -> useEffect -> added future year epoch data", r);
+        })
+        .catch((error) => {
+          console.error("page -> useEffect -> error adding future year epoch data:", error.message);
+        });
+    });
+  }, [isMounted, snapshot.year, addData]);
+
+  if (!isMounted) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <CircularProgress size={100} />
+      </div>
+    );
+  }
+
+  const minuteCards = getTimeCards(EpochType.Minute, snapshot.minute, snapshot.fullDateTime, data);
   const timelineData = [
     {
-      title: "Minute " + epoches.minute,
+      title: "Minute " + snapshot.minute,
       content: (
         <div>
           <div className="grid grid-cols-2 gap-4">
-            <CountdownTimer key={epoches.minute} duration={60} initialRemainingTime={60 - epoches.second} />
+            <CountdownTimer key={snapshot.minute} duration={60} initialRemainingTime={60 - snapshot.second} />
           </div>
           <div className="flex flex-col items-center justify-center gap-2 my-3">
             <h2 className="mb-4 text-xl font-semibold">Minted & Upcoming Epochs</h2>
@@ -227,31 +270,31 @@ export default function Home() {
       ),
     },
     {
-      title: "Hour " + epoches.hour,
+      title: "Hour " + snapshot.hour,
       content: <div>It's coming.</div>,
     },
     {
-      title: "" + epoches.dayName,
+      title: "" + snapshot.dayName,
       content: (
         <div>
-          {epoches.fullDate}
+          {snapshot.fullDate}
           <br />
           It's coming.
         </div>
       ),
     },
     {
-      title: "" + epoches.monthName,
+      title: "" + snapshot.monthName,
       content: (
         <div>
-          {epoches.year}
+          {snapshot.year}
           <br />
           It's coming.
         </div>
       ),
     },
     {
-      title: "" + epoches.year,
+      title: "" + snapshot.year,
       content: <div>It's coming.</div>,
     },
   ];
@@ -259,7 +302,7 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <h1 className="text-4xl font-bold">Timekeepers Demo</h1>
-      <p>{isMounted ? epoches.isoDateTime : "Loading..."}</p> {/* Render only after mount */}
+      <p>{isMounted ? snapshot.isoDateTime : "Loading..."}</p> {/* Render only after mount */}
       <div className="w-full">
         <div className="flex overflow-x-auto">
           <div className="min-w-[200px] p-4">

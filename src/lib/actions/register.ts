@@ -27,9 +27,10 @@ export const register = async (values: RegisterPayload) => {
     });
     await user.save();
   } catch (e) {
-    console.log("actions -> register -> error", e);
+    console.error("actions -> register -> error", e);
   }
 
+  console.log("actions -> register -> success");
   return {
     message: "User has been registered successfully.",
   };

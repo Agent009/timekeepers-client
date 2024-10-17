@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { RootFilterQuery } from "mongoose";
 import { EpochData } from "@customTypes/index";
 import Epoch, { EpochDocument } from "@models/Epoch";
+import { upsertDocument } from "@lib/utils";
+import { connectDB } from "@lib/mongodb";
 // import { readData, writeData } from "@lib/server/utils";
 
 export const runtime = "nodejs";
@@ -24,7 +26,9 @@ export async function GET(request: Request) {
     if (type) query.type = type;
     if (state) query.state = state;
     if (status) query.status = status;
+    console.log("api -> GET data -> query", query);
 
+    await connectDB();
     // @ts-expect-error ignore
     const data = await Epoch.find(query);
     return NextResponse.json(data, { status: 200 });
@@ -40,10 +44,8 @@ export async function POST(request) {
   try {
     const newEntry: EpochData = await request.json();
     console.log("api -> POST data -> newEntry", newEntry);
-    // const writeDataResponse = writeData(newEntry);
-    const epochEntry = new Epoch(newEntry);
-    const writeDataResponse = await epochEntry.save();
-    return NextResponse.json(writeDataResponse, { status: 200 });
+    const result = await upsertDocument(Epoch, newEntry, ["type", "value", "isoDate"]);
+    return NextResponse.json(result, { status: 200 });
   } catch (error) {
     console.error("api -> POST data -> error", error);
 
