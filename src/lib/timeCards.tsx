@@ -71,15 +71,18 @@ export const getTimeCards = (epochType: EpochType, currentVal: number, ymdhmDate
       epochData
         // Filter epochs based on the current value and the maximum allowed difference before the current value
         .filter((epoch) => {
-          return (
-            epoch.type === epochType && epoch.ymdhmDate === ymdhmDate && Math.abs(epoch.value - currentVal) <= maxBefore
-          );
+          const date = dayjs(ymdhmDate);
+          const matchType = epoch.type === epochType;
+          const matchDate =
+            dayjs(epoch.ymdhmDate).diff(date, epochType) <= maxBefore && epoch.ymdhmDate.localeCompare(ymdhmDate) < 0;
+          return matchType && matchDate;
         })
         // Sort in descending order
         ?.sort((a, b) => {
-          return a.ymdhmDate.localeCompare(b.ymdhmDate);
+          return b.ymdhmDate.localeCompare(a.ymdhmDate);
         })) ||
     [];
+  console.log("timeCards -> getTimeCards -> epoch", epochType, currentVal, "filteredEpochs", filteredEpochs);
 
   // Generate cards for epochs before the current value
   for (let i = 0; i < maxBefore; i++) {

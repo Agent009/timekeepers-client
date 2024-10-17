@@ -38,22 +38,32 @@ export default function Home() {
     return await response.json(); // Return the parsed JSON response
   }, []);
 
+  const fetchData = useCallback(async () => {
+    console.log("page -> fetchData");
+    // "/api/?startDate=2023-10-01&endDate=2023-10-02"
+    const response = await fetch(getApiUrl(constants.routes.api.data));
+    const result = await response.json();
+    setData(result);
+  }, []);
+
   // Fetch the epoch snapshot every second
   useEffect(() => {
-    const fetchData = async () => {
-      // "/api/?startDate=2023-10-01&endDate=2023-10-02"
-      console.log("page -> useEffect -> init -> fetchData");
-      const response = await fetch(getApiUrl(constants.routes.api.data));
-      const result = await response.json();
-      setData(result);
-    };
+    console.log("page -> useEffect -> init -> getEpochSnapshot");
+    const intervalId = setInterval(() => {
+      setSnapshot(getEpochSnapshot());
+    }, 1000);
 
-    console.log("page -> useEffect -> init -> fetchData and getEpochSnapshot");
+    return () => clearInterval(intervalId); // Cleanup interval on component unmount
+  }, []);
+  // Fetch the data every 10 seconds
+  useEffect(() => {
+    console.log("page -> useEffect -> init -> fetchData");
     fetchData().then(() => setIsMounted(true));
 
     const intervalId = setInterval(() => {
-      setSnapshot(getEpochSnapshot()); // Re-fetch the epoch snapshot every second
-    }, 1000);
+      // noinspection JSIgnoredPromiseFromCall
+      fetchData();
+    }, 10500);
 
     return () => clearInterval(intervalId); // Cleanup interval on component unmount
   }, []);
@@ -214,18 +224,24 @@ export default function Home() {
   }
 
   const minuteCards = getTimeCards(EpochType.Minute, snapshot.minute, snapshot.fullDateTime, data);
+  // console.log(
+  //   "page -> minuteCards",
+  //   minuteCards,
+  //   "pastCards",
+  //   minuteCards?.pastCards?.length,
+  //   "futureCards",
+  //   minuteCards?.futureCards?.length,
+  // );
   const timelineData = [
     {
       title: "Minute " + snapshot.minute,
       content: (
         <div>
-          <div className="grid grid-cols-2 gap-4">
-            <CountdownTimer key={snapshot.minute} duration={60} initialRemainingTime={60 - snapshot.second} />
-          </div>
           <div className="flex flex-col items-center justify-center gap-2 my-3">
             <h2 className="mb-4 text-xl font-semibold">Minted & Upcoming Epochs</h2>
             <div className="grid grid-cols-2 gap-4">
               <ExpandableCard cards={minuteCards?.pastCards} />
+              <CountdownTimer key={snapshot.minute} duration={60} initialRemainingTime={60 - snapshot.second} />
               <ExpandableCard cards={minuteCards?.futureCards} />
             </div>
           </div>
