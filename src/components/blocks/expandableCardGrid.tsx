@@ -4,7 +4,7 @@ import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { useOutsideClick } from "@lib/hooks/use-outside-click";
 import { NumberCircle } from "@components/icons/numberCircle";
-import { TimeCard } from "@customTypes/index";
+import { TimeCard, rarityGradientColors, EpochRarity } from "@customTypes/index";
 
 type Props = { cards: TimeCard[] };
 export default function ExpandableCard({ cards }: Props) {
@@ -73,7 +73,15 @@ export default function ExpandableCard({ cards }: Props) {
             >
               <motion.div layoutId={`image-${active.title}-${id}`}>
                 <div className="w-full h-80 lg:h-80 flex items-center justify-center">
-                  <NumberCircle title={active.title} topText={"minute"} bottomText={"11:48"} width={200} height={200} />
+                  <NumberCircle
+                    title={active.title}
+                    topText={active.topText}
+                    bottomText={active.bottomText}
+                    width={200}
+                    height={200}
+                    startColor={active.rarity ? rarityGradientColors[active.rarity].start : undefined}
+                    endColor={active.rarity ? rarityGradientColors[active.rarity].end : undefined}
+                  />
                 </div>
 
                 {active.nft && (
@@ -151,15 +159,15 @@ export default function ExpandableCard({ cards }: Props) {
           </div>
         ) : null}
       </AnimatePresence>
-      <ul className="max-w-2xl mx-auto w-full flex flex-row justify-center gap-4">
+      <ul className="max-w-2xl mx-auto w-full flex flex-row justify-center">
         {cards.map((card, index) => (
           <motion.div
             layoutId={`card-${card.title}-${id}`}
             key={`${card.title}-${card.date}-${index}`}
             onClick={() => setActive(card)}
-            className="p-4 flex flex-col hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-xl cursor-pointer"
+            className="p-2 flex flex-col hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-xl cursor-pointer"
           >
-            <div className="flex gap-4 flex-col w-full">
+            <div className="flex flex-col w-full">
               <motion.div layoutId={`image-${card.title}-${id}`}>
                 <div className="h-50 w-full flex items-center justify-center">
                   <NumberCircle
@@ -168,6 +176,8 @@ export default function ExpandableCard({ cards }: Props) {
                     bottomText={card.bottomText}
                     width={200}
                     height={200}
+                    startColor={card.rarity ? rarityGradientColors[card.rarity].start : undefined}
+                    endColor={card.rarity ? rarityGradientColors[card.rarity].end : undefined}
                   />
                 </div>
                 {/*<Image*/}

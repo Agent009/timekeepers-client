@@ -28,6 +28,13 @@ export enum EpochRarity {
   Legendary = "legendary",
 }
 
+export const rarityGradientColors: Record<EpochRarity, { start: string; end: string }> = {
+  [EpochRarity.Common]: { start: "#ff7e5f", end: "#feb47b" },
+  [EpochRarity.Rare]: { start: "#ff6a00", end: "#ee0979" },
+  [EpochRarity.Epic]: { start: "#4a00e0", end: "#8e2de2" },
+  [EpochRarity.Legendary]: { start: "#a8e063", end: "#56ab2f" },
+};
+
 export interface EpochSnapshot {
   second: number;
   minute: number;

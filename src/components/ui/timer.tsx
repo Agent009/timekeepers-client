@@ -98,7 +98,7 @@ export const CountdownTimer = ({
   };
 
   return (
-    <div className="flex justify-center">
+    <div className="flex justify-center items-center">
       <CountdownCircleTimer
         isPlaying
         duration={duration}

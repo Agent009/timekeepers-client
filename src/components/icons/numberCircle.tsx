@@ -7,6 +7,8 @@ type Props = {
   className?: string;
   strokeWidth?: number;
   textColor?: string;
+  startColor?: string;
+  endColor?: string;
 };
 
 export const NumberCircle = ({
@@ -16,8 +18,10 @@ export const NumberCircle = ({
   className,
   strokeWidth = 10,
   textColor = "black",
-  topText = "", // New prop for text above the title
-  bottomText = "", // New prop for text below the title
+  topText = "",
+  bottomText = "",
+  startColor = "#9a2104",
+  endColor = "#feb47b",
 }: Props) => {
   // Adjust radius based on width and height
   const radius = Math.min(width, height) / 2 - strokeWidth;
@@ -26,8 +30,8 @@ export const NumberCircle = ({
     <svg width={width} height={height} className={className}>
       <defs>
         <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" style={{ stopColor: "#ff7e5f", stopOpacity: 1 }} />
-          <stop offset="100%" style={{ stopColor: "#feb47b", stopOpacity: 1 }} />
+          <stop offset="0%" style={{ stopColor: startColor, stopOpacity: 1 }} />
+          <stop offset="100%" style={{ stopColor: endColor, stopOpacity: 1 }} />
         </linearGradient>
       </defs>
       <circle cx={width / 2} cy={height / 2} r={radius} stroke="url(#gradient)" strokeWidth={strokeWidth} fill="none" />

@@ -239,7 +239,7 @@ export default function Home() {
         <div>
           <div className="flex flex-col items-center justify-center gap-2 my-3">
             <h2 className="mb-4 text-xl font-semibold">Minted & Upcoming Epochs</h2>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-2">
               <ExpandableCard cards={minuteCards?.pastCards} />
               <CountdownTimer key={snapshot.minute} duration={60} initialRemainingTime={60 - snapshot.second} />
               <ExpandableCard cards={minuteCards?.futureCards} />
