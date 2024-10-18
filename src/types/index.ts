@@ -85,6 +85,9 @@ export interface TimeCardsResponse {
 
 export interface TimelineEntry {
   title: string;
+  subheading?: string;
+  titleClass?: string;
+  subheadingClass?: string;
   content: React.ReactNode;
 }
 

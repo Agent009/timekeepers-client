@@ -150,3 +150,25 @@
 .footer-up-right-arrow g {
   @apply transition-all duration-200 stroke-[var(--deep-orange)] group-hover/arrow:stroke-white;
 }
+
+/*========== Misc ==========*/
+.text-gradient-common {
+  background: linear-gradient(to right, theme('colors.gradient-common.start'), theme('colors.gradient-common.end'));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.text-gradient-rare {
+  background: linear-gradient(to right, theme('colors.gradient-rare.start'), theme('colors.gradient-rare.end'));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.text-gradient-epic {
+  background: linear-gradient(to right, theme('colors.gradient-epic.start'), theme('colors.gradient-epic.end'));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.text-gradient-legendary {
+  background: linear-gradient(to right, theme('colors.gradient-legendary.start'), theme('colors.gradient-legendary.end'));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}

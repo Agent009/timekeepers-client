@@ -1,5 +1,6 @@
 import type { Config } from "tailwindcss";
 import flattenColorPalette from "tailwindcss/lib/util/flattenColorPalette";
+import { rarityGradientColors } from "./src/types/index";
 
 const config: Config = {
   darkMode: "class",
@@ -55,6 +56,12 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        ...Object.fromEntries(
+          Object.entries(rarityGradientColors).map(([key, value]) => [
+            `gradient-${key.toLowerCase()}`, // e.g., gradient-common
+            value,
+          ]),
+        ),
       },
       borderRadius: {
         lg: "var(--radius)",

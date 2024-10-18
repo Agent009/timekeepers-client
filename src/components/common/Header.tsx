@@ -4,7 +4,7 @@ import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import "@styles/globals.css";
+// import "@styles/globals.css";
 import Linkedin_Icon from "@components/icons/Linkedin_Icon";
 import { constants, getUrl } from "@lib/index";
 import CX_Logo_Light from "@images/logos/cx-logo-light.svg";

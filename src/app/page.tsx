@@ -1,7 +1,14 @@
 "use client";
-import React, { useCallback, useEffect, useState, useTransition, useRef, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import CircularProgress, { circularProgressClasses } from "@mui/material/CircularProgress";
-import { EpochData, EpochSnapshot, EpochType, TimeCardsResponse } from "@customTypes/index";
+import {
+  EpochData,
+  EpochRarity,
+  EpochSnapshot,
+  EpochType,
+  rarityGradientColors,
+  TimeCardsResponse,
+} from "@customTypes/index";
 import ExpandableCard from "@components/blocks/expandableCardGrid";
 import { getApiUrl } from "@lib/api";
 import { constants } from "@lib/constants";
@@ -25,23 +32,6 @@ export default function Home() {
   console.log("page -> isMounted", isMounted, "isPending", isPending, "isFetchingRef", isFetchingRef);
   // console.log("page -> data", data);
 
-  const addData = useCallback(async (newEntry: EpochData, upsert: boolean = true) => {
-    const response = await fetch(getApiUrl(constants.routes.api.data, { upsert: upsert }), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(newEntry),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json(); // Parse the error response
-      throw new Error(errorData.message || "Error saving data"); // Throw an error with the message
-    }
-
-    return await response.json(); // Return the parsed JSON response
-  }, []);
-
   const fetchData = useCallback(async () => {
     if (isFetchingRef.current) return; // Prevent multiple fetches
     console.log("page -> fetchData");
@@ -62,6 +52,23 @@ export default function Home() {
       isFetchingRef.current = false; // Reset fetching status
     }
   }, []); // No dependencies, so it won't be recreated
+
+  const addData = useCallback(async (newEntry: EpochData, upsert: boolean = true) => {
+    const response = await fetch(getApiUrl(constants.routes.api.data, { upsert: upsert }), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(newEntry),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json(); // Parse the error response
+      throw new Error(errorData.message || "Error saving data"); // Throw an error with the message
+    }
+
+    return await response.json(); // Return the parsed JSON response
+  }, []);
 
   const handleEpochData = useCallback(
     (type: EpochType, snapshot: EpochSnapshot) => {
@@ -202,16 +209,30 @@ export default function Home() {
   // }, [isMounted, handleEpochData, snapshot.year]);
 
   const timelineData = useMemo(() => {
+    const minuteRarity = getCurrentEpoch(EpochType.Minute, snapshot, data)?.rarity || EpochRarity.Common;
+    const minuteStartColor = rarityGradientColors[minuteRarity].start;
+    const minuteEndColor = rarityGradientColors[minuteRarity].start;
+    const minuteClass = `text-gradient-${minuteRarity}`;
     return [
       {
         title: "Minute " + snapshot.minute,
+        titleClass: minuteClass,
+        subheadingClass: minuteClass,
+        subheading: minuteRarity,
         content: (
           <div>
             <div className="flex flex-col items-center justify-center gap-2 my-3">
               <h2 className="mb-4 text-xl font-semibold">Minted & Upcoming Epochs</h2>
               <div className="grid grid-cols-3 gap-2">
                 <ExpandableCard cards={minuteCards?.pastCards || []} />
-                <CountdownTimer key={snapshot.minute} duration={60} initialRemainingTime={60 - snapshot.second} />
+                <CountdownTimer
+                  key={snapshot.minute}
+                  duration={60}
+                  initialRemainingTime={60 - snapshot.second}
+                  // @ts-expect-error ignore
+                  colors={[minuteStartColor, minuteEndColor]}
+                  colorsTime={[60, 40]}
+                />
                 <ExpandableCard cards={minuteCards?.futureCards || []} />
               </div>
             </div>

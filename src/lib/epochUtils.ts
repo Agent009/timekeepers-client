@@ -32,7 +32,7 @@ export const randomRarity = (): EpochRarity => {
  * @param epochType
  * @param snapshot
  */
-export const getEpochValue = (epochType: EpochType, snapshot: EpochSnapshot): number => {
+export const getEpochValueFromSnapshot = (epochType: EpochType, snapshot: EpochSnapshot): number => {
   return epochType === EpochType.Minute
     ? snapshot.minute
     : epochType === EpochType.Hour
@@ -51,7 +51,7 @@ export const getEpochValue = (epochType: EpochType, snapshot: EpochSnapshot): nu
  * @param data
  */
 export const getCurrentEpoch = (epochType: EpochType, snapshot: EpochSnapshot, data?: EpochData[]) => {
-  const value = getEpochValue(epochType, snapshot);
+  const value = getEpochValueFromSnapshot(epochType, snapshot);
   const epochData: EpochData | undefined = data?.find(
     (d) => d.type === epochType && d.value === value && d.ymdhmDate === snapshot.fullDateTime,
   );
@@ -65,6 +65,19 @@ export const getCurrentEpoch = (epochType: EpochType, snapshot: EpochSnapshot, d
     status: EpochStatus.Queued,
     rarity: (epochData && epochData.rarity) || randomRarity(),
   };
+};
+
+/**
+ * Compare two epochs and return true if they are the same type and value
+ * @param t
+ * @param a
+ * @param b
+ */
+export const isSameEpoch = (t: EpochType, a: EpochData, b: EpochData) => {
+  const matchType = a.type === b.type;
+  const matchValue = a.value === b.value;
+  const matchDate = t === EpochType.Minute ? a.ymdhmDate === b.ymdhmDate : a.ymdDate === b.ymdDate;
+  return matchType && matchValue && matchDate;
 };
 
 /**
