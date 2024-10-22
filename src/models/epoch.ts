@@ -1,7 +1,7 @@
-import mongoose, { Schema, model } from "mongoose";
+import mongoose, { Document, Schema, model } from "mongoose";
 import { EpochData } from "@customTypes/index";
 
-export interface EpochDocument extends EpochData {
+export interface EpochDocument extends Document, EpochData {
   _id: string; // Include _id for Mongoose document
 }
 
@@ -49,5 +49,5 @@ const EpochSchema = new Schema<EpochDocument>(
   },
 );
 
-const Epoch = mongoose.models?.Epoch || model<EpochDocument>("Epoch", EpochSchema);
-export default Epoch;
+const EpochModel = mongoose.models?.Epoch || model<EpochDocument>("Epoch", EpochSchema);
+export default EpochModel;

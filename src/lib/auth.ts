@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import type { NextAuthOptions } from "next-auth";
 import credentials from "next-auth/providers/credentials";
 import { connectDB } from "@lib/mongodb";
-import User from "@models/User";
+import UserModel from "@models/user";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -16,7 +16,7 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         await connectDB();
         // @ts-expect-error ignore
-        const user = await User.findOne({
+        const user = await UserModel.findOne({
           email: credentials?.email,
         }).select("+password");
 

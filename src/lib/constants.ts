@@ -52,6 +52,29 @@ export const constants = Object.freeze({
       USER: "User",
     },
   },
+  // 3rd Party, Integrations
+  openAI: {
+    useLocal: process.env.USE_LOCAL_AI === "true",
+    localBaseURL: process.env.LOCAL_AI_BASE_URL,
+    apiKey: process.env.OPENAI_API_KEY,
+    models: {
+      chat: process.env.OPENAI_CHAT_MODEL || "gpt-4o-mini",
+    },
+    rag: {
+      chunkSize: 1500,
+      chunkOverlap: 20,
+      topK: 2,
+      topP: 1,
+      temperature: 0.1,
+    },
+    promptTypes: {
+      chat: "chat",
+    },
+    response: {
+      default: "default",
+      streaming: "streaming",
+    },
+  },
   // Routes
   routes: {
     anchor: "#",
@@ -63,6 +86,8 @@ export const constants = Object.freeze({
       base: cwaServerUrl + (cwaServerUrl?.charAt(cwaServerUrl?.length - 1) !== "/" ? "/" : "") + "api/",
       data: "data?upsert=:upsert",
       nft: "nft",
+      splitEmbed: "split-and-embed",
+      retrieveQuery: "retrieve-and-query",
     },
   },
   social: {

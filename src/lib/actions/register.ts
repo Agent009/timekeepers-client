@@ -1,7 +1,7 @@
 "use server";
 import bcrypt from "bcryptjs";
 import { connectDB } from "@lib/mongodb";
-import User from "@models/User";
+import UserModel from "@models/user";
 import { RegisterPayload } from "@customTypes/index";
 
 export const register = async (values: RegisterPayload) => {
@@ -10,7 +10,7 @@ export const register = async (values: RegisterPayload) => {
   try {
     await connectDB();
     // @ts-expect-error ignore
-    const userFound = await User.findOne({ email });
+    const userFound = await UserModel.findOne({ email });
 
     if (userFound) {
       return {
@@ -20,7 +20,7 @@ export const register = async (values: RegisterPayload) => {
 
     // Hash the password before saving it to the database
     const hashedPassword = await bcrypt.hash(String(password), 10);
-    const user = new User({
+    const user = new UserModel({
       name,
       email,
       password: hashedPassword,

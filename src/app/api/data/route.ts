@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { RootFilterQuery } from "mongoose";
 import { EpochData, EpochType } from "@customTypes/index";
-import Epoch, { EpochDocument } from "@models/Epoch";
-import { upsertDocument } from "@lib/utils";
 import { connectDB } from "@lib/mongodb";
+import { upsertDocument } from "@lib/repository";
 // import { readData, writeData } from "@lib/server/utils";
+import EpochModel, { EpochDocument } from "@models/epoch";
 
 export const runtime = "nodejs";
 
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     const newEntry: EpochData = await request.json();
     console.log("api -> POST data -> newEntry", newEntry);
     const dateFieldToCheck = newEntry.type === EpochType.Minute ? "ymdhmDate" : "ymdDate";
-    const result = await upsertDocument(Epoch, newEntry, ["type", "value", dateFieldToCheck], upsert);
+    const result = await upsertDocument(EpochModel, newEntry, ["type", "value", dateFieldToCheck], upsert);
     return NextResponse.json(result, { status: 200 });
   } catch (error) {
     console.error("api -> POST data -> error", error);
