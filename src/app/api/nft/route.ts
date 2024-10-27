@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
-import { getNftImagePath } from "@lib/server/utils";
-import { EpochType } from "@customTypes/index.ts";
 import dayjs from "dayjs";
+import { NextResponse } from "next/server";
+import { EpochType } from "@customTypes/index";
+import { generateImagePath } from "@lib/server/utils";
 
 export const runtime = "nodejs";
 
@@ -12,7 +12,7 @@ export async function GET(request: Request) {
   console.log("api -> GET nft -> epochType", epochType, "date", date);
 
   try {
-    const nftImagePath = getNftImagePath(epochType, date);
+    const nftImagePath = generateImagePath(epochType, date);
     return NextResponse.json({ nft: nftImagePath }, { status: 200 });
   } catch (error) {
     console.error("Error fetching NFT:", error);

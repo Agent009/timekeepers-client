@@ -60,6 +60,9 @@ export interface EpochData {
   ymdhmDate: string; // string in YYYY-MM-DD HH:mm format
   state: EpochState;
   status: EpochStatus;
+  seed?: number | null;
+  prompt?: string | null;
+  image?: string | null;
   nft?: string | null;
   rarity?: EpochRarity;
 }
@@ -73,6 +76,9 @@ export interface TimeCard {
   minted?: boolean;
   rarity?: EpochRarity;
   status?: EpochStatus;
+  seed?: number;
+  prompt?: string;
+  image?: string;
   nft?: string;
   content?: () => React.ReactNode;
 }
@@ -153,6 +159,19 @@ export interface MintDataResponse {
   epochType: EpochType;
   startDate: string;
   endDate: string;
+  prompt: string;
   category: string;
   articles: NewsArticle[];
+}
+
+export interface GeneratedImage {
+  imageUrl: string;
+  imagePath: string;
+  imageSrc: string;
+}
+
+export interface ImageGenerationResponse {
+  success: boolean;
+  error?: string;
+  images: GeneratedImage[];
 }

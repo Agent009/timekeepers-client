@@ -21,6 +21,16 @@ export const getApiUrl = (endpoint: string, params?: { [key: string]: unknown })
 };
 
 /**
+ * Get the formatted server URL for the given endpoint, replacing any placeholders with the respective parameters.
+ * @param {string} endpoint
+ * @param {null|undefined|{[]}} params
+ * @returns {string}
+ */
+export const getServerUrl = (endpoint: string, params?: { [key: string]: unknown }): string => {
+  return formatUrl(constants.routes.server.base, endpoint, params);
+};
+
+/**
  * Format the URL for the given base URL and endpoint, replacing any placeholders with the respective parameters.
  * @param {string} base
  * @param {string} endpoint

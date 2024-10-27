@@ -124,3 +124,43 @@ export const getFutureEpochs = (epochType: EpochType, ymdhmDate: string, amount:
 
   return futureEpochs;
 };
+
+export const getMintDates = (epochType: EpochType, value: number, ymdhmDate: string) => {
+  let startDate = dayjs(ymdhmDate);
+  let endDate = dayjs(ymdhmDate);
+
+  switch (epochType) {
+    case EpochType.Minute:
+      // Ideally, past minute, but for testing purposes, past day
+      startDate = startDate.startOf("day"); // startDate.startOf("minute")
+      endDate = endDate.endOf("day"); // endDate.endOf("day")
+      break;
+    case EpochType.Hour:
+      // Ideally, past hour, but for testing purposes, past day
+      startDate = startDate.startOf("day"); // startDate.startOf("hour")
+      endDate = endDate.endOf("day"); // endDate.endOf("hour")
+      break;
+    case EpochType.Day:
+      // Past day
+      startDate = startDate.startOf("day");
+      endDate = endDate.endOf("day");
+      break;
+    case EpochType.Month:
+      // Past month
+      startDate = startDate.startOf("month");
+      endDate = endDate.endOf("month");
+      break;
+    case EpochType.Year:
+      // Past year
+      startDate = startDate.startOf("year");
+      endDate = endDate.endOf("year");
+      break;
+    default:
+      throw new Error("Invalid epoch type");
+  }
+
+  return {
+    startDate: startDate.toISOString(),
+    endDate: endDate.toISOString(),
+  };
+};

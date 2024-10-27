@@ -1,6 +1,7 @@
 import fs, { existsSync } from "fs";
 import path from "path";
 import { EpochData, EpochType, WriteDataResponse } from "@customTypes/index";
+import { getImagesDir } from "@lib/utils";
 
 const dataFilePath = path.join("src/app/data.json");
 // console.log("server -> utils -> dataFilePath", dataFilePath);
@@ -37,7 +38,7 @@ export const readData = (
       ymdhmDate: entry.ymdhmDate,
       state: entry.state,
       status: entry.status,
-      nft: entry.nft ?? getNftImagePath(entry.type, entry.ymdhmDate),
+      nft: entry.nft ?? generateImagePath(entry.type, entry.ymdhmDate),
       rarity: entry.rarity,
     }));
 };
@@ -82,10 +83,10 @@ export const writeData = (newEntry: EpochData): WriteDataResponse => {
   }
 };
 
-export function getNftImagePath(epochType: EpochType, ymdhmDate: string): string | null {
-  const publicDir = path.join(process.cwd(), "public", "images", "nfts");
+export const generateImagePath = (epochType: EpochType, ymdhmDate: string): string | null => {
+  const imagesDir = getImagesDir(false);
   const formattedDate = ymdhmDate.replace(/[ :]/g, "_");
-  const imagePath = path.join(publicDir, `${epochType}_${formattedDate}_0.png`);
+  const imagePath = path.join(imagesDir, `${epochType}_${formattedDate}_0.png`);
 
   // Check if the image exists
   if (existsSync(imagePath)) {
@@ -94,4 +95,4 @@ export function getNftImagePath(epochType: EpochType, ymdhmDate: string): string
 
   // Return null if the image does not exist
   return null;
-}
+};

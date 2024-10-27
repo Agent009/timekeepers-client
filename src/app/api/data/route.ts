@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
 import { RootFilterQuery } from "mongoose";
+import { NextRequest, NextResponse } from "next/server";
 import { EpochData, EpochType } from "@customTypes/index";
 import { connectDB } from "@lib/mongodb";
 import { upsertDocument } from "@lib/repository";
@@ -30,7 +30,7 @@ export async function GET(request: Request) {
 
     await connectDB();
     // @ts-expect-error ignore
-    const data = await Epoch.find(query);
+    const data = await EpochModel.find(query);
     return NextResponse.json(data, { status: 200 });
   } catch (error) {
     console.error("api -> GET data -> error reading data:", error);
@@ -44,10 +44,10 @@ export async function POST(request: NextRequest) {
   try {
     const url = new URL(request.url);
     const upsert = url.searchParams.get("upsert") === "true";
-    const newEntry: EpochData = await request.json();
-    console.log("api -> POST data -> newEntry", newEntry);
-    const dateFieldToCheck = newEntry.type === EpochType.Minute ? "ymdhmDate" : "ymdDate";
-    const result = await upsertDocument(EpochModel, newEntry, ["type", "value", dateFieldToCheck], upsert);
+    const data: EpochData = await request.json();
+    console.log("api -> POST data -> data", data);
+    const dateFieldToCheck = data.type === EpochType.Minute ? "ymdhmDate" : "ymdDate";
+    const result = await upsertDocument(EpochModel, data, ["type", "value", dateFieldToCheck], upsert);
     return NextResponse.json(result, { status: 200 });
   } catch (error) {
     console.error("api -> POST data -> error", error);

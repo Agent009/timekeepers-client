@@ -1,11 +1,11 @@
 "use client";
 import React, { useEffect, useId, useRef, useState } from "react";
-import Image from "next/image";
+import dayjs from "dayjs";
 import { AnimatePresence, motion } from "framer-motion";
-import { useOutsideClick } from "@lib/hooks/use-outside-click";
+import Image from "next/image";
 import { NumberCircle } from "@components/icons/numberCircle";
 import { TimeCard, rarityGradientColors } from "@customTypes/index";
-import dayjs from "dayjs";
+import { useOutsideClick } from "@lib/hooks/use-outside-click";
 
 type Props = { cards: TimeCard[] };
 export default function ExpandableCard({ cards }: Props) {
@@ -80,7 +80,7 @@ export default function ExpandableCard({ cards }: Props) {
             <motion.div
               layoutId={`card-${active.value}-${id}`}
               ref={ref}
-              className="w-full max-w-[500px]  h-full md:h-fit md:max-h-[90%]  flex flex-col bg-white dark:bg-neutral-900 sm:rounded-3xl overflow-hidden"
+              className="w-full max-w-[500px]  h-full md:h-fit md:max-h-[90%]  flex flex-col bg-white dark:bg-neutral-900 sm:rounded-3xl overflow-y-auto"
             >
               <motion.div layoutId={`image-${active.value}-${id}`}>
                 <div className="w-full h-80 lg:h-80 flex items-center justify-center">
@@ -92,17 +92,17 @@ export default function ExpandableCard({ cards }: Props) {
                     height={200}
                     startColor={active.rarity ? rarityGradientColors[active.rarity].start : undefined}
                     endColor={active.rarity ? rarityGradientColors[active.rarity].end : undefined}
-                    backgroundImage={"images/nfts/minute_2024-10-10_12_06_0.png"}
+                    backgroundImage={active.image ? "/" + active.image : undefined}
                     backgroundImageOpacity={1}
                   />
                 </div>
 
-                {active.nft && (
+                {active.image && (
                   <Image
                     priority
                     width={200}
                     height={200}
-                    src={active.nft}
+                    src={"/" + active.image}
                     alt={active.value}
                     className="w-full h-80 lg:h-80 sm:rounded-tr-lg sm:rounded-tl-lg object-cover object-top"
                   />
@@ -141,6 +141,18 @@ export default function ExpandableCard({ cards }: Props) {
                       className="text-neutral-600 dark:text-neutral-400 text-base"
                     >
                       status: {active.status}
+                    </motion.p>
+                    <motion.p
+                      layoutId={`seed-${active.value}-${id}`}
+                      className="text-neutral-600 dark:text-neutral-400 text-base"
+                    >
+                      seed: {active.seed}
+                    </motion.p>
+                    <motion.p
+                      layoutId={`prompt-${active.value}-${id}`}
+                      className="text-neutral-600 dark:text-neutral-400 text-base"
+                    >
+                      prompt: {active.prompt}
                     </motion.p>
                   </div>
 
@@ -196,7 +208,7 @@ export default function ExpandableCard({ cards }: Props) {
                       height={200}
                       startColor={startColor}
                       endColor={endColor}
-                      backgroundImage={"images/nfts/minute_2024-10-10_12_06_0.png"}
+                      backgroundImage={card.image ? card.image : undefined}
                       backgroundImageOpacity={0.3}
                     />
                   </div>

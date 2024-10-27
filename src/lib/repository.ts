@@ -123,13 +123,16 @@ export async function upsertDocument<T extends Document>(
 ): Promise<UpsertResult<T>> {
   // Create a query object from the unique fields and their corresponding values from the new data.
   const query = Object.fromEntries(uniqueFields.map((field) => [field, newData[field]]));
-  console.log("utils -> upsertDocument -> model", model, "query", query);
+  console.log("utils -> upsertDocument ->", model, query);
   await connectDB();
   // @ts-expect-error ignore
   const existingDocument = await model.findOne(query);
 
   if (existingDocument) {
+    console.log("utils -> upsertDocument -> found existing document");
+
     if (!upsert) {
+      console.log("utils -> upsertDocument -> returning existing document because of no upsert");
       return { success: true, updated: false, document: existingDocument as T };
     }
 
@@ -137,6 +140,7 @@ export async function upsertDocument<T extends Document>(
     const updatedDocument = await existingDocument.save();
     return { success: true, updated: true, document: updatedDocument as T };
   } else {
+    console.log("utils -> upsertDocument -> no existing document, creating new");
     const createdDocument = await model.create(newData);
     return { success: true, updated: false, document: createdDocument };
   }

@@ -124,7 +124,7 @@ export default function ExpandableCardDemo() {
       <ul className="max-w-2xl mx-auto w-full gap-4">
         {cards.map((card, index) => (
           <motion.div
-            layoutId={`card-${card.title}-${id}`}
+            layoutId={`card-${card.title}-${id}-${index}`}
             key={`card-${card.title}-${id}`}
             onClick={() => setActive(card)}
             className="p-4 flex flex-col md:flex-row justify-between items-center hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-xl cursor-pointer"

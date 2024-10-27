@@ -5,14 +5,22 @@ import {
   EpochData,
   EpochRarity,
   EpochSnapshot,
+  EpochState,
+  EpochStatus,
   EpochType,
   rarityGradientColors,
   TimeCardsResponse,
 } from "@customTypes/index";
 import ExpandableCard from "@components/blocks/expandableCardGrid";
-import { getApiUrl } from "@lib/api";
+import { getApiUrl, getServerUrl } from "@lib/api";
 import { constants } from "@lib/constants";
-import { getCurrentEpoch, getEpochSnapshot, getFutureEpochs } from "@lib/epochUtils";
+import {
+  getCurrentEpoch,
+  getEpochSnapshot,
+  getEpochValueFromSnapshot,
+  getFutureEpochs,
+  getMintDates,
+} from "@lib/epochUtils";
 import { textToImage } from "@lib/server/livepeer";
 import { getTimeCards } from "@lib/timeCards";
 import { Timeline } from "@ui/timeline";
@@ -39,7 +47,7 @@ export default function Home() {
 
     try {
       // "/api/?startDate=2023-10-01&endDate=2023-10-02"
-      const response = await fetch(getApiUrl(constants.routes.api.data));
+      const response = await fetch(getApiUrl(constants.routes.api.getData));
       const result = await response.json();
       // console.log("page -> fetchData -> result", result);
 
@@ -53,13 +61,13 @@ export default function Home() {
     }
   }, []); // No dependencies, so it won't be recreated
 
-  const addData = useCallback(async (newEntry: EpochData, upsert: boolean = true) => {
-    const response = await fetch(getApiUrl(constants.routes.api.data, { upsert: upsert }), {
+  const saveEpochData = useCallback(async (entity: EpochData, upsert: boolean = true) => {
+    const response = await fetch(getApiUrl(constants.routes.api.saveData, { upsert: upsert }), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(newEntry),
+      body: JSON.stringify(entity),
     });
 
     if (!response.ok) {
@@ -72,28 +80,78 @@ export default function Home() {
 
   const handleEpochData = useCallback(
     (type: EpochType, snapshot: EpochSnapshot) => {
-      console.log(`page -> handleEpochData -> ${type} epoch`);
+      const epochValue = getEpochValueFromSnapshot(type, snapshot);
+      console.log(`page -> handleEpochData -> ${type} epoch`, epochValue);
 
       // Add current epoch data
-      // TODO: Ensure adding the current epoch doesn't replace previously generated future epochs.
-      addData(getCurrentEpoch(type, snapshot, data))
+      // Ensure adding the current epoch doesn't replace previously generated future epochs.
+      if (
+        data.some(
+          (d) =>
+            d.type === type &&
+            d.value === epochValue &&
+            d.ymdhmDate === snapshot.fullDateTime &&
+            d.status === EpochStatus.Generated,
+        )
+      ) {
+        console.log(`page -> handleEpochData -> ${type} epoch ${epochValue} -> already generated, skipping...`);
+        return;
+      }
+
+      // TODO: Currently generates images even if current epoch hasn't elapsed.
+      saveEpochData({ ...getCurrentEpoch(type, snapshot, data), status: EpochStatus.Generating })
         .then((r) => {
           const d: EpochData = r.document;
           const actionStr = r.updated ? "updated" : "added";
           console.log(`page -> handleEpochData -> ${actionStr} ${type} epoch data`, d.value, d.rarity, r);
 
           // Only generate an image if the epoch data was stored for the first time.
-          if (r.success && !r.updated && 0) {
+          if (r.success && d.state !== EpochState.Future && !d.image && !d.nft) {
             startTransition(async () => {
+              const seed = d.type === EpochType.Minute ? (d.value + 1) * (snapshot.hour + 1) : d.value + 1;
+              const mintDates = getMintDates(d.type, d.value, d.ymdhmDate);
+              const promptResponse = await fetch(
+                getServerUrl(constants.routes.server.getMintData, {
+                  epochType: type,
+                  startDate: mintDates.startDate,
+                  endDate: mintDates.endDate,
+                }),
+              );
+              const promptResponseJson = await promptResponse.json();
+              console.log("page -> handleEpochData -> promptResponseJson", promptResponseJson, "seed", seed);
+              const prompt =
+                promptResponseJson?.prompt ||
+                "A beautiful sunset on a beach with the following text in the bottom right: " + d.ymdhmDate;
               const result = await textToImage({
-                prompt: "A beautiful sunset on a beach with the following text in the bottom right: " + d.ymdhmDate,
-                seed: d.value,
+                prompt: prompt,
+                seed: seed,
                 epochType: d.type,
                 ymdhmDate: d.ymdhmDate,
               });
 
               if (result.success) {
-                setImages((prevImages) => [...result.images, ...prevImages]);
+                const imageSrc = result.images[0]?.imageSrc;
+                setImages((prevImages) => [...result.images.map((image) => image.imageSrc), ...prevImages]);
+                console.log("page -> handleEpochData -> images", result.images);
+
+                // Update the epoch data with the new image path
+                if (imageSrc) {
+                  saveEpochData({ ...d, seed: seed, prompt: prompt, image: imageSrc, status: EpochStatus.Generated })
+                    .then((r) => {
+                      const updatedEpoch: EpochData = r.document;
+                      const actionStr = r.updated ? "updated" : "added";
+                      console.log(
+                        `page -> handleEpochData -> ${actionStr} ${type} epoch data with image path`,
+                        updatedEpoch,
+                      );
+                    })
+                    .catch((error) => {
+                      console.error(
+                        `page -> handleEpochData -> error updating ${type} epoch data with image`,
+                        error.message,
+                      );
+                    });
+                }
               } else {
                 console.error(`page -> handleEpochData -> failed to generate ${type} epoch image`, result);
               }
@@ -119,7 +177,7 @@ export default function Home() {
 
       // Add only new future epochs
       newFutureEpochs.forEach((epoch) => {
-        addData(epoch, false)
+        saveEpochData(epoch, false)
           .then((r) => {
             const d: EpochData = r.document;
             const actionStr = r.updated ? "updated" : "added";
@@ -130,7 +188,7 @@ export default function Home() {
           });
       });
     },
-    [data, addData],
+    [data, saveEpochData],
   );
 
   // Fetch the epoch snapshot every second
@@ -261,10 +319,10 @@ export default function Home() {
                 <div className="mt-8">
                   <h2 className="mb-4 text-xl font-semibold">Minted NFTs</h2>
                   <div className="grid grid-cols-2 gap-4">
-                    {images.map((src, index) => (
+                    {images.map((imagePath, index) => (
                       <img
                         key={index}
-                        src={src}
+                        src={imagePath}
                         alt={`Generated Image ${index + 1}`}
                         className="h-auto w-full rounded-lg shadow-md"
                       />

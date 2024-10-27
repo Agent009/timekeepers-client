@@ -10,6 +10,10 @@ const devOrLocalEnv = devEnv || localEnv;
 const cwaServerHost = process.env.CWA_SERVER_HOST || "http://localhost";
 const cwaServerPort = process.env.CWA_SERVER_PORT || 3000;
 const cwaServerUrl = process.env.NEXT_PUBLIC_CWA_SERVER_URL || `${cwaServerHost}:${cwaServerPort}`;
+// Timekeepers Server (TKS)
+const tksServerHost = process.env.TKS_SERVER_HOST || "http://localhost";
+const tksServerPort = process.env.TKS_SERVER_PORT || 3001;
+const tksServerUrl = process.env.NEXT_PUBLIC_TKS_SERVER_URL || `${tksServerHost}:${tksServerPort}`;
 // DB
 const mongodbHost = process.env.MONGODB_HOST;
 const mongodbPort = parseInt(process.env.MONGODB_PORT || "27017");
@@ -30,6 +34,12 @@ export const constants = Object.freeze({
     host: cwaServerHost,
     port: cwaServerPort,
     url: cwaServerUrl,
+  },
+  // TKS
+  tks: {
+    host: tksServerHost,
+    port: tksServerPort,
+    url: tksServerUrl,
   },
   app: {
     id: "cx-time-app",
@@ -84,10 +94,20 @@ export const constants = Object.freeze({
     sitemap: "/sitemap.xml",
     api: {
       base: cwaServerUrl + (cwaServerUrl?.charAt(cwaServerUrl?.length - 1) !== "/" ? "/" : "") + "api/",
-      data: "data?upsert=:upsert",
+      getData: "data",
+      saveData: "data?upsert=:upsert",
       nft: "nft",
       splitEmbed: "split-and-embed",
       retrieveQuery: "retrieve-and-query",
+    },
+    server: {
+      base: tksServerUrl + (tksServerUrl?.charAt(tksServerUrl?.length - 1) !== "/" ? "/" : ""),
+      fetchAndSaveTopHeadlines: "news/fetch-save/top-headlines",
+      getMintData: "news/mint-data?epochType=:epochType&startDate=:startDate&endDate=:endDate",
+      getNewsRecord: "news/:recordId",
+      getNewsList: "news",
+      updateNewsRecord: "news/:recordId",
+      deleteNewsRecord: "news/:recordId",
     },
   },
   social: {

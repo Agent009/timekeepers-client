@@ -50,6 +50,9 @@ export const generateCard = (
     minted: EpochStatus.Generated === epochData?.status,
     rarity: epochData?.rarity || EpochRarity.Common,
     status: epochData?.status ?? EpochStatus.Queued,
+    seed: epochData?.seed || 0,
+    prompt: epochData?.prompt || undefined,
+    image: epochData?.image || undefined,
     nft: epochData?.nft || undefined,
     content: content || generateCardContent(epochType, currentVal, ymdhmDate),
   };

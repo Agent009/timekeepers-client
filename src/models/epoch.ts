@@ -2,7 +2,7 @@ import mongoose, { Document, Schema, model } from "mongoose";
 import { EpochData } from "@customTypes/index";
 
 export interface EpochDocument extends Document, EpochData {
-  _id: string; // Include _id for Mongoose document
+  // _id: string; // Include _id for Mongoose document
 }
 
 const EpochSchema = new Schema<EpochDocument>(
@@ -34,6 +34,18 @@ const EpochSchema = new Schema<EpochDocument>(
     status: {
       type: String,
       required: true,
+    },
+    seed: {
+      type: Number,
+      default: 0,
+    },
+    prompt: {
+      type: String,
+      default: null,
+    },
+    image: {
+      type: String,
+      default: null,
     },
     nft: {
       type: String,

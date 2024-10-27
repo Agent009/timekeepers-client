@@ -1,10 +1,11 @@
 "use server";
 import path from "node:path";
 import { openAsBlob, writeFileSync } from "node:fs";
+import dayjs from "dayjs";
 import { revalidatePath } from "next/cache";
 import { Livepeer } from "@livepeer/ai";
-import dayjs from "dayjs";
-import { EpochType } from "@customTypes/index.ts";
+import { EpochType, GeneratedImage, ImageGenerationResponse } from "@customTypes/index";
+import { getImagePath } from "@lib/utils";
 
 // const modelIds = [
 //   "ByteDance/SDXL-Lightning",
@@ -37,7 +38,7 @@ const livepeerAI = new Livepeer({
   httpBearer: "",
 });
 
-export async function textToImage(params: TextToImageRequest) {
+export const textToImage = async (params: TextToImageRequest): Promise<ImageGenerationResponse> => {
   const prompt = params.prompt;
   const modelId = params.modelId || "SG161222/RealVisXL_V4.0_Lightning";
   const width = params.width || 512;
@@ -69,19 +70,25 @@ export async function textToImage(params: TextToImageRequest) {
   revalidatePath("/");
 
   if (result.imageResponse?.images) {
-    const images = result.imageResponse.images.map((image) => image.url);
+    const images: GeneratedImage[] = result.imageResponse.images.map((image, index) => {
+      const imageName = `${epochType}_${ymdhmDate.replace(/[ :]/g, "_")}_${index}.png`;
+      return {
+        imageUrl: image.url,
+        imagePath: getImagePath(imageName, false),
+        imageSrc: getImagePath(imageName, true),
+      };
+    });
 
     // Save each image to the filesystem
-    const publicDir = path.join(process.cwd(), "public", "images", "nfts");
     await Promise.all(
-      images.map(async (imageUrl, index) => {
+      images.map(async (image) => {
         // Extract the image name from the URL by getting the last part of the URL.
         // Example URL: https://obj-store.livepeer.cloud/livepeer-cloud-ai-images/cff21c04/1c9b4a4d.png
         // const imageName = imageUrl.split("/").pop();
-        // const imagePath = path.join(publicDir, imageName || `${ymdhmDate}_${index}.png`);
+        // const imagePath = path.join(imagesDir, imageName || `${ymdhmDate}_${index}.png`);
         // const imageName = imageUrl.split("/").pop();
-        const imagePath = path.join(publicDir, `${epochType}_${ymdhmDate.replace(/[ :]/g, "_")}_${index}.png`);
-        const response = await fetch(imageUrl);
+        const imagePath = image.imagePath;
+        const response = await fetch(image.imageUrl);
         const arrayBuffer = await response.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
         writeFileSync(imagePath, buffer);
@@ -99,7 +106,7 @@ export async function textToImage(params: TextToImageRequest) {
       error: "Failed to generate images",
     };
   }
-}
+};
 
 export async function imageToImage(formData: FormData) {
   const image = formData.get("image") as File;
