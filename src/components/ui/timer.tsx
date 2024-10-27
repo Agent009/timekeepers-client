@@ -4,6 +4,7 @@ import { CountdownCircleTimer } from "react-countdown-circle-timer";
 import { cx } from "class-variance-authority";
 
 type Props = {
+  dimension?: string;
   // Countdown duration in seconds
   duration?: number;
   initialRemainingTime?: number;
@@ -34,6 +35,7 @@ const getTimeSeconds = (time) => (minuteSeconds - time) | 0;
 // };
 
 export const CountdownTimer = ({
+  dimension = "seconds",
   duration = 60,
   initialRemainingTime = 60,
   shouldRepeat = false,
@@ -43,7 +45,7 @@ export const CountdownTimer = ({
   onComplete,
 }: Props) => {
   const onCompleteCB = onComplete ? () => onComplete() : () => ({ shouldRepeat: shouldRepeat, delay: repeatDelay });
-  const renderTime = ({ dimension, remainingTime }) => {
+  const renderTime = ({ unit, remainingTime }) => {
     const currentTime = useRef(remainingTime);
     const prevTime = useRef(null);
     const isNewTimeFirstTick = useRef(false);
@@ -86,7 +88,7 @@ export const CountdownTimer = ({
       <div className="time-wrapper">
         <div key={remainingTime} className={cx("timer", isTimeUp && "up")}>
           {remainingTime}
-          <div className="dimension">{dimension}</div>
+          <div className="dimension">{unit}</div>
         </div>
         {prevTime.current !== null && (
           <div key={prevTime.current} className={cx("timer", !isTimeUp && "down")}>
@@ -110,7 +112,7 @@ export const CountdownTimer = ({
         {({ elapsedTime, color }) => (
           <div style={{ color }}>
             {renderTime({
-              dimension: "seconds",
+              unit: dimension,
               remainingTime: getTimeSeconds(elapsedTime),
             })}
           </div>

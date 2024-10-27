@@ -34,6 +34,10 @@ export default function Home() {
   const [isMounted, setIsMounted] = useState(false);
   const futureSlots = 3;
   const [minuteCards, setMinuteCards] = useState<TimeCardsResponse>();
+  const [hourCards, setHourCards] = useState<TimeCardsResponse>();
+  const [dayCards, setDayCards] = useState<TimeCardsResponse>();
+  const [monthCards, setMonthCards] = useState<TimeCardsResponse>();
+  const [yearCards, setYearCards] = useState<TimeCardsResponse>();
   // Mutable ref object that persists for the full lifetime of the component.
   // It does not cause re-renders when its value changes, and hence solves the infinite re-renders issue.
   const isFetchingRef = useRef(false);
@@ -62,105 +66,145 @@ export default function Home() {
   }, []); // No dependencies, so it won't be recreated
 
   const saveEpochData = useCallback(async (entity: EpochData, upsert: boolean = true) => {
-    const response = await fetch(getApiUrl(constants.routes.api.saveData, { upsert: upsert }), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(entity),
-    });
+    try {
+      const response = await fetch(getApiUrl(constants.routes.api.saveData, { upsert: upsert }), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(entity),
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json(); // Parse the error response
-      throw new Error(errorData.message || "Error saving data"); // Throw an error with the message
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error(errorData.message || "Error saving data");
+        return errorData;
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("page -> fetchData -> error", error);
+      return error;
     }
-
-    return await response.json(); // Return the parsed JSON response
   }, []);
 
   const handleEpochData = useCallback(
     (type: EpochType, snapshot: EpochSnapshot) => {
       const epochValue = getEpochValueFromSnapshot(type, snapshot);
-      console.log(`page -> handleEpochData -> ${type} epoch`, epochValue);
+      let addCurrentEpoch = true;
+      console.log(`page -> handleEpochData (${type} ${epochValue})`);
 
       // Add current epoch data
-      // Ensure adding the current epoch doesn't replace previously generated future epochs.
       if (
+        // Ensure adding the current epoch doesn't replace previously generated future epochs.
         data.some(
           (d) =>
             d.type === type &&
             d.value === epochValue &&
             d.ymdhmDate === snapshot.fullDateTime &&
             d.status === EpochStatus.Generated,
-        )
+        ) ||
+        // And also, don't add future epochs if the current epoch hasn't elapsed yet.
+        (snapshot.second >= 2 && snapshot.second <= 58)
       ) {
-        console.log(`page -> handleEpochData -> ${type} epoch ${epochValue} -> already generated, skipping...`);
-        return;
+        addCurrentEpoch = false;
+        console.log(
+          `page -> handleEpochData (${type} ${epochValue}) -> already generated or not elapsed, skipping...`,
+          snapshot,
+        );
       }
 
       // TODO: Currently generates images even if current epoch hasn't elapsed.
-      saveEpochData({ ...getCurrentEpoch(type, snapshot, data), status: EpochStatus.Generating })
-        .then((r) => {
-          const d: EpochData = r.document;
-          const actionStr = r.updated ? "updated" : "added";
-          console.log(`page -> handleEpochData -> ${actionStr} ${type} epoch data`, d.value, d.rarity, r);
+      if (addCurrentEpoch) {
+        saveEpochData({ ...getCurrentEpoch(type, snapshot, data), status: EpochStatus.Generating })
+          .then((r) => {
+            const d: EpochData = r.document;
+            const actionStr = r.updated ? "updated" : "added";
+            console.log(
+              `page -> handleEpochData (${type} ${epochValue}) -> save -> ${actionStr} epoch data`,
+              d.value,
+              d.rarity,
+              r,
+            );
 
-          // Only generate an image if the epoch data was stored for the first time.
-          if (r.success && d.state !== EpochState.Future && !d.image && !d.nft) {
-            startTransition(async () => {
-              const seed = d.type === EpochType.Minute ? (d.value + 1) * (snapshot.hour + 1) : d.value + 1;
-              const mintDates = getMintDates(d.type, d.value, d.ymdhmDate);
-              const promptResponse = await fetch(
-                getServerUrl(constants.routes.server.getMintData, {
-                  epochType: type,
-                  startDate: mintDates.startDate,
-                  endDate: mintDates.endDate,
-                }),
-              );
-              const promptResponseJson = await promptResponse.json();
-              console.log("page -> handleEpochData -> promptResponseJson", promptResponseJson, "seed", seed);
-              const prompt =
-                promptResponseJson?.prompt ||
-                "A beautiful sunset on a beach with the following text in the bottom right: " + d.ymdhmDate;
-              const result = await textToImage({
-                prompt: prompt,
-                seed: seed,
-                epochType: d.type,
-                ymdhmDate: d.ymdhmDate,
-              });
+            // Only generate an image if the epoch data was stored for the first time.
+            if (r.success && d.state !== EpochState.Future && !d.image && !d.nft) {
+              startTransition(async () => {
+                const seed = d.type === EpochType.Minute ? (d.value + 1) * (snapshot.hour + 1) : d.value + 1;
+                const mintDates = getMintDates(d.type, d.value, d.ymdhmDate);
+                let prompt =
+                  "A beautiful sunset on a beach with the following text in the bottom right: " + d.ymdhmDate;
 
-              if (result.success) {
-                const imageSrc = result.images[0]?.imageSrc;
-                setImages((prevImages) => [...result.images.map((image) => image.imageSrc), ...prevImages]);
-                console.log("page -> handleEpochData -> images", result.images);
+                try {
+                  const promptResponse = await fetch(
+                    getServerUrl(constants.routes.server.getMintData, {
+                      epochType: type,
+                      startDate: mintDates.startDate,
+                      endDate: mintDates.endDate,
+                    }),
+                  );
+                  const promptResponseJson = await promptResponse.json();
+                  console.log(
+                    `page -> handleEpochData (${type} ${epochValue}) -> save -> promptResponseJson`,
+                    promptResponseJson,
+                    "seed",
+                    seed,
+                  );
 
-                // Update the epoch data with the new image path
-                if (imageSrc) {
-                  saveEpochData({ ...d, seed: seed, prompt: prompt, image: imageSrc, status: EpochStatus.Generated })
-                    .then((r) => {
-                      const updatedEpoch: EpochData = r.document;
-                      const actionStr = r.updated ? "updated" : "added";
-                      console.log(
-                        `page -> handleEpochData -> ${actionStr} ${type} epoch data with image path`,
-                        updatedEpoch,
-                      );
-                    })
-                    .catch((error) => {
-                      console.error(
-                        `page -> handleEpochData -> error updating ${type} epoch data with image`,
-                        error.message,
-                      );
-                    });
+                  if (promptResponseJson?.prompt) {
+                    prompt = promptResponseJson.prompt;
+                  }
+                } catch (error) {
+                  console.error(`page -> handleEpochData (${type} ${epochValue}) -> save -> mint data error`, error);
                 }
-              } else {
-                console.error(`page -> handleEpochData -> failed to generate ${type} epoch image`, result);
-              }
-            });
-          }
-        })
-        .catch((error) => {
-          console.error(`page -> handleEpochData -> error adding ${type} epoch data:`, error.message);
-        });
+
+                console.log(`page -> handleEpochData (${type} ${epochValue}) -> save -> t2i -> snapshot`, snapshot);
+                const result = await textToImage({
+                  prompt: prompt,
+                  seed: seed,
+                  epochType: d.type,
+                  ymdhmDate: d.ymdhmDate,
+                });
+
+                if (result.success) {
+                  const imageSrc = result.images[0]?.imageSrc;
+                  setImages((prevImages) => [...result.images.map((image) => image.imageSrc), ...prevImages]);
+                  console.log(`page -> handleEpochData (${type} ${epochValue}) -> save -> images`, result.images);
+
+                  // Update the epoch data with the new image path
+                  if (imageSrc) {
+                    saveEpochData({ ...d, seed: seed, prompt: prompt, image: imageSrc, status: EpochStatus.Generated })
+                      .then((r) => {
+                        const updatedEpoch: EpochData = r.document;
+                        const actionStr = r.updated ? "updated" : "added";
+                        console.log(
+                          `page -> handleEpochData (${type} ${epochValue}) -> save -> save -> ${actionStr} image src`,
+                          updatedEpoch,
+                        );
+                      })
+                      .catch((error) => {
+                        console.error(
+                          `page -> handleEpochData (${type} ${epochValue}) -> save -> save -> error updating image src`,
+                          error.message,
+                        );
+                      });
+                  }
+                } else {
+                  console.error(
+                    `page -> handleEpochData (${type} ${epochValue}) -> save -> failed to generate image`,
+                    result,
+                  );
+                }
+              });
+            }
+          })
+          .catch((error) => {
+            console.error(
+              `page -> handleEpochData (${type} ${epochValue}) -> save -> error adding data:`,
+              error.message,
+            );
+          });
+      }
 
       // Get future epochs
       const futureEpochs: EpochData[] = getFutureEpochs(type, snapshot.isoDateTime, futureSlots);
@@ -181,10 +225,18 @@ export default function Home() {
           .then((r) => {
             const d: EpochData = r.document;
             const actionStr = r.updated ? "updated" : "added";
-            console.log(`page -> handleEpochData -> ${actionStr} future ${type} epoch data`, d.value, d.rarity, r);
+            console.log(
+              `page -> handleEpochData (${type} ${d.value}) -> save -> ${actionStr} future epoch`,
+              d.value,
+              d.rarity,
+              r,
+            );
           })
           .catch((error) => {
-            console.error(`page -> handleEpochData -> error adding future ${type} epoch data:`, error.message);
+            console.error(
+              `page -> handleEpochData (${type} ${epoch.value}) -> save -> error adding future epoch:`,
+              error.message,
+            );
           });
       });
     },
@@ -234,43 +286,63 @@ export default function Home() {
     setMinuteCards(getTimeCards(EpochType.Minute, snapshot.minute, snapshot.fullDateTime, data));
   }, [isMounted, handleEpochData, snapshot.minute]);
 
-  // useEffect(() => {
-  //   if (!isMounted) {
-  //     return;
-  //   }
-  //
-  //   handleEpochData(EpochType.Hour, snapshot);
-  // }, [isMounted, handleEpochData, snapshot.hour]);
-  //
-  // useEffect(() => {
-  //   if (!isMounted) {
-  //     return;
-  //   }
-  //
-  //   handleEpochData(EpochType.Day, snapshot);
-  // }, [isMounted, handleEpochData, snapshot.dayOfMonth]);
-  //
-  // useEffect(() => {
-  //   if (!isMounted) {
-  //     return;
-  //   }
-  //
-  //   handleEpochData(EpochType.Month, snapshot);
-  // }, [isMounted, handleEpochData, snapshot.month]);
-  //
-  // useEffect(() => {
-  //   if (!isMounted) {
-  //     return;
-  //   }
-  //
-  //   handleEpochData(EpochType.Year, snapshot);
-  // }, [isMounted, handleEpochData, snapshot.year]);
+  useEffect(() => {
+    if (!isMounted) {
+      return;
+    }
+
+    handleEpochData(EpochType.Hour, snapshot);
+    setHourCards(getTimeCards(EpochType.Hour, snapshot.hour, snapshot.fullDateTime, data));
+  }, [isMounted, handleEpochData, snapshot.hour]);
+
+  useEffect(() => {
+    if (!isMounted) {
+      return;
+    }
+
+    handleEpochData(EpochType.Day, snapshot);
+    setDayCards(getTimeCards(EpochType.Day, snapshot.dayOfMonth, snapshot.fullDateTime, data));
+  }, [isMounted, handleEpochData, snapshot.dayOfMonth]);
+
+  useEffect(() => {
+    if (!isMounted) {
+      return;
+    }
+
+    handleEpochData(EpochType.Month, snapshot);
+    setMonthCards(getTimeCards(EpochType.Month, snapshot.month, snapshot.fullDateTime, data));
+  }, [isMounted, handleEpochData, snapshot.month]);
+
+  useEffect(() => {
+    if (!isMounted) {
+      return;
+    }
+
+    handleEpochData(EpochType.Year, snapshot);
+    setYearCards(getTimeCards(EpochType.Year, snapshot.year, snapshot.fullDateTime, data));
+  }, [isMounted, handleEpochData, snapshot.year]);
 
   const timelineData = useMemo(() => {
     const minuteRarity = getCurrentEpoch(EpochType.Minute, snapshot, data)?.rarity || EpochRarity.Common;
+    const hourRarity = getCurrentEpoch(EpochType.Hour, snapshot, data)?.rarity || EpochRarity.Common;
+    const dayRarity = getCurrentEpoch(EpochType.Day, snapshot, data)?.rarity || EpochRarity.Common;
+    const monthRarity = getCurrentEpoch(EpochType.Month, snapshot, data)?.rarity || EpochRarity.Common;
+    const yearRarity = getCurrentEpoch(EpochType.Year, snapshot, data)?.rarity || EpochRarity.Common;
+    const minuteClass = `text-gradient-${minuteRarity}`;
+    const hourClass = `text-gradient-${hourRarity}`;
+    const dayClass = `text-gradient-${dayRarity}`;
+    const monthClass = `text-gradient-${monthRarity}`;
+    const yearClass = `text-gradient-${yearRarity}`;
     const minuteStartColor = rarityGradientColors[minuteRarity].start;
     const minuteEndColor = rarityGradientColors[minuteRarity].start;
-    const minuteClass = `text-gradient-${minuteRarity}`;
+    const hourStartColor = rarityGradientColors[hourRarity].start;
+    const hourEndColor = rarityGradientColors[hourRarity].start;
+    const dayStartColor = rarityGradientColors[dayRarity].start;
+    const dayEndColor = rarityGradientColors[dayRarity].start;
+    const monthStartColor = rarityGradientColors[monthRarity].start;
+    const monthEndColor = rarityGradientColors[monthRarity].start;
+    const yearStartColor = rarityGradientColors[yearRarity].start;
+    const yearEndColor = rarityGradientColors[yearRarity].start;
     return [
       {
         title: "Minute " + snapshot.minute,
@@ -284,7 +356,7 @@ export default function Home() {
               <div className="grid grid-cols-3 gap-2">
                 <ExpandableCard cards={minuteCards?.pastCards || []} />
                 <CountdownTimer
-                  key={snapshot.minute}
+                  key={"minute-" + snapshot.minute}
                   duration={60}
                   initialRemainingTime={60 - snapshot.second}
                   // @ts-expect-error ignore
@@ -336,31 +408,107 @@ export default function Home() {
       },
       {
         title: "Hour " + snapshot.hour,
-        content: <div>It's coming.</div>,
+        titleClass: hourClass,
+        subheadingClass: hourClass,
+        subheading: hourRarity,
+        content: (
+          <div>
+            <div className="flex flex-col items-center justify-center gap-2 my-3">
+              <h2 className="mb-4 text-xl font-semibold">Minted & Upcoming Epochs</h2>
+              <div className="grid grid-cols-3 gap-2">
+                <ExpandableCard cards={hourCards?.pastCards || []} />
+                <CountdownTimer
+                  key={"hour-" + snapshot.hour}
+                  dimension={"minutes"}
+                  duration={60}
+                  initialRemainingTime={60 - snapshot.minute}
+                  // @ts-expect-error ignore
+                  colors={[hourStartColor, hourEndColor]}
+                  colorsTime={[60, 40]}
+                />
+                <ExpandableCard cards={hourCards?.futureCards || []} />
+              </div>
+            </div>
+          </div>
+        ),
       },
       {
         title: "" + snapshot.dayName,
+        titleClass: dayClass,
+        subheadingClass: dayClass,
+        subheading: dayRarity,
         content: (
           <div>
-            {snapshot.fullDate}
-            <br />
-            It's coming.
+            <div className="flex flex-col items-center justify-center gap-2 my-3">
+              <h2 className="mb-4 text-xl font-semibold">Minted & Upcoming Epochs</h2>
+              <div className="grid grid-cols-3 gap-2">
+                <ExpandableCard cards={dayCards?.pastCards || []} />
+                <CountdownTimer
+                  key={"day-" + snapshot.dayOfMonth}
+                  dimension={"hours"}
+                  duration={24}
+                  initialRemainingTime={24 - snapshot.hour}
+                  // @ts-expect-error ignore
+                  colors={[dayStartColor, dayEndColor]}
+                  colorsTime={[60, 40]}
+                />
+                <ExpandableCard cards={dayCards?.futureCards || []} />
+              </div>
+            </div>
           </div>
         ),
       },
       {
         title: "" + snapshot.monthName,
+        titleClass: monthClass,
+        subheadingClass: monthClass,
+        subheading: monthRarity,
         content: (
           <div>
-            {snapshot.year}
-            <br />
-            It's coming.
+            <div className="flex flex-col items-center justify-center gap-2 my-3">
+              <h2 className="mb-4 text-xl font-semibold">Minted & Upcoming Epochs</h2>
+              <div className="grid grid-cols-3 gap-2">
+                <ExpandableCard cards={monthCards?.pastCards || []} />
+                <CountdownTimer
+                  key={"month-" + snapshot.month}
+                  dimension={"days"}
+                  duration={31}
+                  initialRemainingTime={31 - snapshot.dayOfMonth}
+                  // @ts-expect-error ignore
+                  colors={[monthStartColor, monthEndColor]}
+                  colorsTime={[60, 40]}
+                />
+                <ExpandableCard cards={monthCards?.futureCards || []} />
+              </div>
+            </div>
           </div>
         ),
       },
       {
         title: "" + snapshot.year,
-        content: <div>It's coming.</div>,
+        titleClass: yearClass,
+        subheadingClass: yearClass,
+        subheading: yearRarity,
+        content: (
+          <div>
+            <div className="flex flex-col items-center justify-center gap-2 my-3">
+              <h2 className="mb-4 text-xl font-semibold">Minted & Upcoming Epochs</h2>
+              <div className="grid grid-cols-3 gap-2">
+                <ExpandableCard cards={yearCards?.pastCards || []} />
+                <CountdownTimer
+                  key={"year-" + snapshot.year}
+                  dimension={"months"}
+                  duration={12}
+                  initialRemainingTime={12 - snapshot.month}
+                  // @ts-expect-error ignore
+                  colors={[yearStartColor, yearEndColor]}
+                  colorsTime={[60, 40]}
+                />
+                <ExpandableCard cards={yearCards?.futureCards || []} />
+              </div>
+            </div>
+          </div>
+        ),
       },
     ];
   }, [snapshot.minute, minuteCards]);

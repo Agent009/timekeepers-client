@@ -7,6 +7,7 @@ type Props = {
   width?: number;
   height?: number;
   className?: string;
+  borderRadius?: number;
   strokeWidth?: number;
   textColor?: string;
   startColor?: string;
@@ -15,11 +16,12 @@ type Props = {
   backgroundImageOpacity?: number;
 };
 
-export const NumberCircle = ({
+export const RectangleCard = ({
   title = "",
   width = 50,
   height = 50,
   className,
+  borderRadius = 50,
   strokeWidth = 10,
   textColor = "black",
   topText = "",
@@ -29,11 +31,9 @@ export const NumberCircle = ({
   backgroundImage,
   backgroundImageOpacity = 1, // Default opacity set to 1 (fully opaque)
 }: Props) => {
-  // Adjust radius based on width and height
-  const radius = Math.min(width, height) / 2 - strokeWidth;
-  const gradientId = `gradient-${startColor.replace("#", "")}-${endColor.replace("#", "")}`;
+  const gradientId = `gradient-rc-${startColor.replace("#", "")}-${endColor.replace("#", "")}`;
   // console.log(
-  //   "NumberCircle -> render -> text",
+  //   "RectangleCard -> render -> text",
   //   topText,
   //   title,
   //   bottomText,
@@ -46,8 +46,8 @@ export const NumberCircle = ({
   return (
     <svg width={width} height={height} className={className}>
       <defs>
-        <clipPath id="circleClip">
-          <circle cx={width / 2} cy={height / 2} r={radius} />
+        <clipPath id="rectangleClip">
+          <rect x="0" y="0" width={width} height={height} rx={borderRadius} ry={borderRadius} />
         </clipPath>
         <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" style={{ stopColor: startColor, stopOpacity: 1 }} />
@@ -60,25 +60,28 @@ export const NumberCircle = ({
           width={width}
           height={height}
           preserveAspectRatio="xMidYMid slice"
-          clipPath="url(#circleClip)"
-          opacity={backgroundImageOpacity} // Set the opacity of the image
+          clipPath="url(#rectangleClip)"
+          opacity={backgroundImageOpacity}
         />
       )}
-      <circle
-        cx={width / 2}
-        cy={height / 2}
-        r={radius}
+      <rect
+        x="0"
+        y="0"
+        width={width}
+        height={height}
+        rx={borderRadius}
+        ry={borderRadius}
         stroke={`url(#${gradientId})`}
         strokeWidth={strokeWidth}
         fill="none"
       />
-      <text x="50%" y="20%" textAnchor="middle" dominantBaseline="middle" fontSize={radius * 0.2} fill={textColor}>
+      <text x="50%" y="20%" textAnchor="middle" dominantBaseline="middle" fontSize={height * 0.1} fill={textColor}>
         {topText}
       </text>
-      <text x="50%" y="55%" textAnchor="middle" dominantBaseline="middle" fontSize={radius} fill={textColor}>
+      <text x="50%" y="55%" textAnchor="middle" dominantBaseline="middle" fontSize={height * 0.2} fill={textColor}>
         {title}
       </text>
-      <text x="50%" y="80%" textAnchor="middle" dominantBaseline="middle" fontSize={radius * 0.2} fill={textColor}>
+      <text x="50%" y="80%" textAnchor="middle" dominantBaseline="middle" fontSize={height * 0.1} fill={textColor}>
         {bottomText}
       </text>
     </svg>

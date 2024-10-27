@@ -2,10 +2,12 @@
 import React, { useEffect, useId, useRef, useState } from "react";
 import dayjs from "dayjs";
 import { AnimatePresence, motion } from "framer-motion";
-import Image from "next/image";
-import { NumberCircle } from "@components/icons/numberCircle";
-import { TimeCard, rarityGradientColors } from "@customTypes/index";
+import { AccessTime, CheckCircle, MonetizationOn, Star, TextSnippet, Warning } from "@mui/icons-material";
+import { CircleCard } from "@components/icons/CircleCard";
+import { RectangleCard } from "@components/icons/RectangleCard";
+import { EpochRarity, EpochStatus, rarityGradientColors, TimeCard } from "@customTypes/index";
 import { useOutsideClick } from "@lib/hooks/use-outside-click";
+import { cx } from "class-variance-authority";
 
 type Props = { cards: TimeCard[] };
 export default function ExpandableCard({ cards }: Props) {
@@ -22,6 +24,7 @@ export default function ExpandableCard({ cards }: Props) {
     "active",
     active,
   );
+  const activeRarityClass = `text-gradient-${active && typeof active === "object" && active?.rarity ? active.rarity : EpochRarity.Common}`;
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -80,93 +83,122 @@ export default function ExpandableCard({ cards }: Props) {
             <motion.div
               layoutId={`card-${active.value}-${id}`}
               ref={ref}
-              className="w-full max-w-[500px]  h-full md:h-fit md:max-h-[90%]  flex flex-col bg-white dark:bg-neutral-900 sm:rounded-3xl overflow-y-auto"
+              className="w-full max-w-[500px]  h-full md:h-fit md:max-h-[90%]  flex flex-col bg-white dark:bg-neutral-900 sm:rounded-3xl"
             >
               <motion.div layoutId={`image-${active.value}-${id}`}>
                 <div className="w-full h-80 lg:h-80 flex items-center justify-center">
-                  <NumberCircle
-                    // title={active.value}
-                    // topText={active.topText}
-                    // bottomText={active.bottomText}
-                    width={200}
-                    height={200}
-                    startColor={active.rarity ? rarityGradientColors[active.rarity].start : undefined}
-                    endColor={active.rarity ? rarityGradientColors[active.rarity].end : undefined}
-                    backgroundImage={active.image ? "/" + active.image : undefined}
-                    backgroundImageOpacity={1}
-                  />
+                  {active.image ? (
+                    // <Image
+                    //   priority
+                    //   width={200}
+                    //   height={200}
+                    //   src={"/" + active.image}
+                    //   alt={active.value}
+                    //   className="w-full h-80 lg:h-80 sm:rounded-tr-lg sm:rounded-tl-lg object-cover object-top"
+                    // />
+                    <RectangleCard
+                      title={active.value}
+                      topText={active.topText}
+                      bottomText={active.bottomText}
+                      width={500}
+                      height={320}
+                      borderRadius={30}
+                      startColor={active.rarity ? rarityGradientColors[active.rarity].start : undefined}
+                      endColor={active.rarity ? rarityGradientColors[active.rarity].end : undefined}
+                      backgroundImage={"/" + active.image}
+                      backgroundImageOpacity={1}
+                    />
+                  ) : (
+                    <CircleCard
+                      title={active.value}
+                      topText={active.topText}
+                      bottomText={active.bottomText}
+                      width={200}
+                      height={200}
+                      startColor={active.rarity ? rarityGradientColors[active.rarity].start : undefined}
+                      endColor={active.rarity ? rarityGradientColors[active.rarity].end : undefined}
+                      backgroundImage={active.image ? "/" + active.image : undefined}
+                      backgroundImageOpacity={1}
+                    />
+                  )}
                 </div>
-
-                {active.image && (
-                  <Image
-                    priority
-                    width={200}
-                    height={200}
-                    src={"/" + active.image}
-                    alt={active.value}
-                    className="w-full h-80 lg:h-80 sm:rounded-tr-lg sm:rounded-tl-lg object-cover object-top"
-                  />
-                )}
               </motion.div>
 
               <div>
-                <div className="flex justify-between items-start p-4">
-                  <div className="">
+                <div className="p-4 bg-gray-100 dark:bg-neutral-800 rounded-lg shadow-md">
+                  <div className="flex justify-between gap-2">
                     <motion.h3
                       layoutId={`title-${active.value}-${id}`}
-                      className="font-medium text-neutral-700 dark:text-neutral-200 text-base"
+                      className={cx(
+                        activeRarityClass,
+                        "font-semibold text-xl text-neutral-800 dark:text-neutral-200 mb-2 flex items-center gap-x-2",
+                      )}
                     >
-                      {active.type}: {active.value}
+                      <Star className="mr-2" />
+                      {active.type}: <span className="font-bold text-green-600">{active.value}</span> ({active.rarity})
                     </motion.h3>
                     <motion.p
                       layoutId={`description-${active.date}-${id}`}
-                      className="text-neutral-600 dark:text-neutral-400 text-base"
+                      className="text-neutral-700 dark:text-neutral-400 text-base mb-1 flex items-center gap-x-2"
                     >
-                      date: {dayjs(active.date).format("YYYY-MM-DD HH:mm")}
+                      <AccessTime className="mr-2" />
+                      <span className="font-medium">Date:</span> {dayjs(active.date).format("YYYY-MM-DD HH:mm")}
                     </motion.p>
+                  </div>
+                  {/*<div className="flex justify-between gap-2">*/}
+                  {/*  <motion.p*/}
+                  {/*    layoutId={`description-${active.date}-${id}`}*/}
+                  {/*    className="text-neutral-700 dark:text-neutral-400 text-base mb-1 flex items-center gap-x-2"*/}
+                  {/*  >*/}
+                  {/*    <AccessTime className="mr-2" />*/}
+                  {/*    <span className="font-medium">Date:</span> {dayjs(active.date).format("YYYY-MM-DD HH:mm")}*/}
+                  {/*  </motion.p>*/}
+                  {/*  <motion.p*/}
+                  {/*    layoutId={`rarity-${active.rarity}-${id}`}*/}
+                  {/*    className={cx(*/}
+                  {/*      activeRarityClass,*/}
+                  {/*      "text-neutral-700 dark:text-neutral-400 text-base mb-1 flex items-center gap-x-2",*/}
+                  {/*    )}*/}
+                  {/*  >*/}
+                  {/*    <Star className="mr-2" />*/}
+                  {/*    <span className="font-medium">Rarity:</span> {active.rarity}*/}
+                  {/*  </motion.p>*/}
+                  {/*</div>*/}
+                  <div className="flex justify-between gap-2">
                     <motion.p
-                      layoutId={`rarity-${active.rarity}-${id}`}
-                      className="text-neutral-600 dark:text-neutral-400 text-base"
+                      layoutId={`status-${active.status}-${id}`}
+                      className="text-neutral-700 dark:text-neutral-400 text-base mb-1 flex items-center gap-x-2"
                     >
-                      rarity: {active.rarity}
+                      {active.status === EpochStatus.Generated ? (
+                        <CheckCircle className="mr-2 text-green-600" />
+                      ) : (
+                        <Warning className="mr-2 text-red-600" />
+                      )}
+                      <span className="font-medium">Status:</span> {active.status}
                     </motion.p>
                     <motion.p
                       layoutId={`minted-${active.minted}-${id}`}
-                      className="text-neutral-600 dark:text-neutral-400 text-base"
+                      className="text-neutral-700 dark:text-neutral-400 text-base mb-1 flex items-center gap-x-2"
                     >
-                      {active.minted}
-                    </motion.p>
-                    <motion.p
-                      layoutId={`status-${active.status}-${id}`}
-                      className="text-neutral-600 dark:text-neutral-400 text-base"
-                    >
-                      status: {active.status}
-                    </motion.p>
-                    <motion.p
-                      layoutId={`seed-${active.value}-${id}`}
-                      className="text-neutral-600 dark:text-neutral-400 text-base"
-                    >
-                      seed: {active.seed}
-                    </motion.p>
-                    <motion.p
-                      layoutId={`prompt-${active.value}-${id}`}
-                      className="text-neutral-600 dark:text-neutral-400 text-base"
-                    >
-                      prompt: {active.prompt}
+                      <MonetizationOn className="mr-2" />
+                      <span className="font-medium">Minted:</span> {active.minted || "Pending mint..."}
                     </motion.p>
                   </div>
-
-                  {/*<motion.a*/}
-                  {/*  layout*/}
-                  {/*  initial={{ opacity: 0 }}*/}
-                  {/*  animate={{ opacity: 1 }}*/}
-                  {/*  exit={{ opacity: 0 }}*/}
-                  {/*  href={active.ctaLink}*/}
-                  {/*  target="_blank"*/}
-                  {/*  className="px-4 py-3 text-sm rounded-full font-bold bg-green-500 text-white"*/}
+                  {/*<motion.p*/}
+                  {/*  layoutId={`seed-${active.value}-${id}`}*/}
+                  {/*  className="text-neutral-700 dark:text-neutral-400 text-base mb-1 flex items-center gap-x-2"*/}
                   {/*>*/}
-                  {/*  {active.ctaText}*/}
-                  {/*</motion.a>*/}
+                  {/*  <Speed className="mr-2" />*/}
+                  {/*  <span className="font-medium">Seed:</span> {active.seed}*/}
+                  {/*</motion.p>*/}
+                  <motion.p
+                    layoutId={`prompt-${active.value}-${id}`}
+                    className="text-neutral-700 dark:text-neutral-400 text-base flex items-start gap-x-2 max-h-20 overflow-y-auto"
+                  >
+                    <TextSnippet className="mr-2" />
+                    <span className="font-medium">Prompt (seed {active.seed}):</span>{" "}
+                    <span className="whitespace-pre-wrap">{active.prompt}</span>
+                  </motion.p>
                 </div>
                 <div className="pt-4 relative px-4">
                   <motion.div
@@ -199,7 +231,7 @@ export default function ExpandableCard({ cards }: Props) {
               <div className="flex flex-col w-full">
                 <motion.div layoutId={`image-${card.value}-${id}`}>
                   <div className="h-50 w-full flex items-center justify-center">
-                    <NumberCircle
+                    <CircleCard
                       key={`circle-${card.value}-${card.date}-${index}`}
                       title={card.value}
                       topText={card.topText}
