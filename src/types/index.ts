@@ -148,3 +148,11 @@ export interface NewsArticle {
   title: string;
   description: string;
 }
+
+export interface MintDataResponse {
+  epochType: EpochType;
+  startDate: string;
+  endDate: string;
+  category: string;
+  articles: NewsArticle[];
+}
