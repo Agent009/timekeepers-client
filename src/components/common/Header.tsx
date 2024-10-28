@@ -54,16 +54,16 @@ export function Header() {
 
           <nav>
             <ul className="flex gap-10 py-5 px-3 bg-white font-bold">
-              <li>
-                <Link href="#">
-                  <p className="text-black/80">Computer Vision</p>
-                </Link>
-              </li>
-              <li>
-                <Link href="#">
-                  <p className="text-black/80">Stable Diffusion</p>
-                </Link>
-              </li>
+              {/*<li>*/}
+              {/*  <Link href="#">*/}
+              {/*    <p className="text-black/80">Computer Vision</p>*/}
+              {/*  </Link>*/}
+              {/*</li>*/}
+              {/*<li>*/}
+              {/*  <Link href="#">*/}
+              {/*    <p className="text-black/80">Stable Diffusion</p>*/}
+              {/*  </Link>*/}
+              {/*</li>*/}
               <li>{showSession()}</li>
             </ul>
           </nav>
