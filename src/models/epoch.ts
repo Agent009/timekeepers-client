@@ -3,10 +3,12 @@ import { EpochData } from "@customTypes/index";
 
 export interface EpochDocument extends Document, EpochData {
   // _id: string; // Include _id for Mongoose document
+  layerId: mongoose.Types.ObjectId;
 }
 
 const EpochSchema = new Schema<EpochDocument>(
   {
+    layerId: { type: mongoose.Schema.Types.ObjectId, ref: "Layer", required: true, index: true },
     type: {
       type: String,
       required: true,
@@ -62,4 +64,9 @@ const EpochSchema = new Schema<EpochDocument>(
 );
 
 const EpochModel = mongoose.models?.Epoch || model<EpochDocument>("Epoch", EpochSchema);
+
+export async function updateEpochesWithDefaultLayer(defaultLayerId: mongoose.Types.ObjectId) {
+  await EpochModel.updateMany({}, { $set: { layerId: defaultLayerId } });
+}
+
 export default EpochModel;

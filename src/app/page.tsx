@@ -392,6 +392,7 @@ export default function Home() {
                   <h2 className="mb-4 text-xl font-semibold">Minted NFTs</h2>
                   <div className="grid grid-cols-2 gap-4">
                     {images.map((imagePath, index) => (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         key={index}
                         src={imagePath}

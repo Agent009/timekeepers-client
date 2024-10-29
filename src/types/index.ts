@@ -1,5 +1,13 @@
 import React from "react";
 
+export enum LayerCategory {
+  General = "general",
+  Sports = "sports",
+  Science = "science",
+  Technology = "technology",
+  Entertainment = "entertainment",
+}
+
 export enum EpochType {
   Minute = "minute",
   Hour = "hour",
