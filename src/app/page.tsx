@@ -23,10 +23,12 @@ import {
 } from "@lib/epochUtils";
 import { textToImage } from "@lib/server/livepeer";
 import { getTimeCards } from "@lib/timeCards";
+import { AppContext } from "@lib/providers/provider";
 import { Timeline } from "@ui/timeline";
 import { CountdownTimer } from "@ui/timer";
 
 export default function Home() {
+  const { layer } = React.useContext(AppContext);
   const [data, setData] = useState<EpochData[]>([]);
   const [snapshot, setSnapshot] = useState(getEpochSnapshot());
   const [isPending, startTransition] = useTransition();
@@ -41,7 +43,7 @@ export default function Home() {
   // Mutable ref object that persists for the full lifetime of the component.
   // It does not cause re-renders when its value changes, and hence solves the infinite re-renders issue.
   const isFetchingRef = useRef(false);
-  console.log("page -> isMounted", isMounted, "isPending", isPending, "isFetchingRef", isFetchingRef);
+  console.log("page -> isMounted", isMounted, "isPending", isPending, "isFetchingRef", isFetchingRef, "layer", layer);
   // console.log("page -> data", data);
 
   const fetchData = useCallback(async () => {
@@ -51,7 +53,7 @@ export default function Home() {
 
     try {
       // "/api/?startDate=2023-10-01&endDate=2023-10-02"
-      const response = await fetch(getApiUrl(constants.routes.api.getData));
+      const response = await fetch(getApiUrl(constants.routes.api.getData, { layerId: layer?._id }));
       const result = await response.json();
       // console.log("page -> fetchData -> result", result);
 
@@ -72,7 +74,7 @@ export default function Home() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(entity),
+        body: JSON.stringify({ ...entity, layerId: layer?._id }),
       });
 
       if (!response.ok) {
@@ -256,6 +258,12 @@ export default function Home() {
   // Fetch the data every 10 seconds
   useEffect(() => {
     console.log("page -> useEffect -> init -> fetchData");
+
+    if (!layer) {
+      console.log("page -> useEffect -> init -> no layer found, skipping fetchData");
+      return;
+    }
+
     const fetchAndSetData = async () => {
       try {
         await fetchData();
@@ -274,7 +282,7 @@ export default function Home() {
     }, 10500);
 
     return () => clearInterval(intervalId); // Cleanup interval on component unmount
-  }, [fetchData]);
+  }, [layer, fetchData]);
 
   // Calculate and store the currently elapsed and future epochs
   useEffect(() => {

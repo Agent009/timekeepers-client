@@ -10,16 +10,19 @@ export const runtime = "nodejs";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
+  const layerId = searchParams.get("layerId") || undefined;
   const startDate = searchParams.get("startDate") || undefined;
   const endDate = searchParams.get("endDate") || undefined;
   const rarity = searchParams.get("rarity") || undefined;
   const type = searchParams.get("type") || undefined;
   const state = searchParams.get("state") || undefined;
   const status = searchParams.get("status") || undefined;
+  console.log("api -> GET data -> layerId", layerId);
 
   try {
     // const data = readData(startDate, endDate, rarity, type, state, status);
     const query: RootFilterQuery<EpochDocument> = {};
+    if (layerId) query.layerId = layerId;
     if (startDate) query.isoDate = { $gte: new Date(startDate) };
     if (endDate) query.isoDate = { $lte: new Date(endDate) };
     if (rarity) query.rarity = rarity;
