@@ -1,6 +1,6 @@
 import { RootFilterQuery } from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
-import { EpochData, EpochType } from "@customTypes/index";
+import { EpochType } from "@customTypes/index";
 import { connectDB } from "@lib/mongodb";
 import { upsertDocument } from "@lib/repository";
 // import { readData, writeData } from "@lib/server/utils";
@@ -31,6 +31,10 @@ export async function GET(request: Request) {
     if (status) query.status = status;
     console.log("api -> GET data -> query", query);
 
+    if (!layerId) {
+      return NextResponse.json({ error: "Provider LayerID to fetch epoch data." }, { status: 400 });
+    }
+
     await connectDB();
     // @ts-expect-error ignore
     const data = await EpochModel.find(query);
@@ -47,8 +51,13 @@ export async function POST(request: NextRequest) {
   try {
     const url = new URL(request.url);
     const upsert = url.searchParams.get("upsert") === "true";
-    const data: EpochData = await request.json();
+    const data: EpochDocument = await request.json();
     console.log("api -> POST data -> data", data);
+
+    if (!data.layerId) {
+      return NextResponse.json({ error: "Provider LayerID to insert/update epoch data." }, { status: 400 });
+    }
+
     const dateFieldToCheck = data.type === EpochType.Minute ? "ymdhmDate" : "ymdDate";
     const result = await upsertDocument(EpochModel, data, ["type", "value", dateFieldToCheck], upsert);
     return NextResponse.json(result, { status: 200 });
