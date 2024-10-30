@@ -4,7 +4,7 @@ import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import CircularProgress, { circularProgressClasses } from "@mui/material/CircularProgress";
+// import CircularProgress, { circularProgressClasses } from "@mui/material/CircularProgress";
 // import "@styles/globals.css";
 import Linkedin_Icon from "@components/icons/Linkedin_Icon";
 import { constants, getApiUrl, getUrl } from "@lib/index";
@@ -102,7 +102,7 @@ export function Header() {
           </div>
 
           <nav>
-            <ul className="flex gap-10 py-5 px-3 bg-white font-bold">
+            <ul className="flex gap-10 py-5 px-3 bg-white font-bold relative">
               {layers.length > 0 ? (
                 layers.map((layerItem, index) => (
                   <li
@@ -114,24 +114,25 @@ export function Header() {
                   </li>
                 ))
               ) : (
-                <CircularProgress
-                  variant="indeterminate"
-                  disableShrink
-                  sx={(theme) => ({
-                    color: "#1a90ff",
-                    animationDuration: "550ms",
-                    position: "absolute",
-                    left: 0,
-                    [`& .${circularProgressClasses.circle}`]: {
-                      strokeLinecap: "round",
-                    },
-                    ...theme.applyStyles("dark", {
-                      color: "#308fe8",
-                    }),
-                  })}
-                  size={40}
-                  thickness={4}
-                />
+                <p>Loading layers...</p>
+                // <CircularProgress
+                //   variant="indeterminate"
+                //   disableShrink
+                //   sx={(theme) => ({
+                //     color: "#1a90ff",
+                //     animationDuration: "550ms",
+                //     position: "absolute",
+                //     left: 0,
+                //     [`& .${circularProgressClasses.circle}`]: {
+                //       strokeLinecap: "round",
+                //     },
+                //     ...theme.applyStyles("dark", {
+                //       color: "#308fe8",
+                //     }),
+                //   })}
+                //   size={40}
+                //   thickness={4}
+                // />
               )}
               <li>{showSession()}</li>
             </ul>

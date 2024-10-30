@@ -23,7 +23,7 @@ export default function Home() {
   if (!layer || !snapshot) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <CircularProgress size={100} />
+        <CircularProgress size={100} thickness={10} />
       </div>
     );
   }

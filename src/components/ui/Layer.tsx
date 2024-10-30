@@ -363,7 +363,7 @@ export const Layer = ({ snapshot, layer }: Props) => {
                 <ExpandableCard cards={minuteCards?.futureCards || []} />
               </div>
             </div>
-            <div className="flex items-center justify-center gap-2 my-3">
+            <div className="flex items-center justify-center gap-2 my-3 relative">
               {isPending && (
                 <CircularProgress
                   variant="indeterminate"
@@ -515,10 +515,10 @@ export const Layer = ({ snapshot, layer }: Props) => {
   //   return <Timeline data={data} />;
   // });
 
-  if (!isMounted || !layer || !data) {
+  if (!isMounted || !data) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <CircularProgress size={100} />
+        <CircularProgress size={100} thickness={10} />
       </div>
     );
   }
